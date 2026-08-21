@@ -1,0 +1,16 @@
+*.onnx
+*.ckpt
+*.pth
+*.pt
+*.th
+*.safetensors
+
+__pycache__/
+.vscode/
+venv/
+.venv/
+.agents/
+
+uvr_run.log
+data.pkl
+benchmark_cache/
