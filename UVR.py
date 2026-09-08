@@ -3358,7 +3358,7 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             model_precision_Label.grid(pady=MENU_PADDING_2)
             model_precision_Option = ComboBoxMenu(settings_menu_format_Frame, textvariable=self.model_precision_var, values=MODEL_PRECISION_OPTIONS, width=GEN_SETTINGS_WIDTH+1)
             model_precision_Option.grid(padx=20,pady=MENU_PADDING_1)
-            self.help_hints(model_precision_Label, text="Select precision preset:\n• Ultra Quality: FP32 (Max precision, mastering)\n• Balanced: BF16 (Recommended for general use)\n• Performance: FP16 (Fast, lower VRAM)")
+            self.help_hints(model_precision_Label, text="Select precision preset:\n• Ultra Quality: FP32 (Max precision, mastering)\n• Performance: FP16 (Fast, lower VRAM)")
             
             # if is_choose_arch:
             #     is_use_opencl_Option = ttk.Checkbutton(settings_menu_format_Frame, 

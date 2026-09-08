@@ -2237,9 +2237,4 @@ def loading_mix(X, mp):
     return X_spec
 
 
-try:
-    from benchmarks.gui_runtime_recorder import install_gui_runtime_benchmark_hooks
 
-    install_gui_runtime_benchmark_hooks(globals())
-except Exception as gui_benchmark_error:
-    print(f"[Benchmark warning] GUI runtime recorder unavailable: {type(gui_benchmark_error).__name__}")

@@ -10,7 +10,8 @@ __pycache__/
 venv/
 .venv/
 .agents/
+benchmark_cache/
+benchmark_results/
 
 uvr_run.log
 data.pkl
-benchmark_cache/
