@@ -48,7 +48,6 @@ CSV_FIELDS = [
     "audio_file",
     "audio_duration_sec",
     "round",
-    "cache_state",
     "total_time_sec",
     "inference_time_sec",
     "speed_factor_rt",

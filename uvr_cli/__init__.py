@@ -11,7 +11,12 @@ from .model_resolver import (
     list_available_models,
     resolve_model_file,
 )
-from .runner import execute_inference, get_audio_metadata
+from .runner import (
+    execute_inference,
+    get_audio_metadata,
+    get_existing_outputs,
+    get_expected_stem_paths,
+)
 from .telemetry import TelemetrySampler, collect_system_info, sync_cuda
 
 __version__ = "2.0.0"
@@ -27,6 +32,8 @@ __all__ = [
     "export_benchmark_csv",
     "export_benchmark_json",
     "get_audio_metadata",
+    "get_existing_outputs",
+    "get_expected_stem_paths",
     "list_available_models",
     "resolve_model_file",
     "sanitize_path",

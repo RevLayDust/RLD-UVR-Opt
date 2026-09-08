@@ -24,16 +24,13 @@ from uvr_cli.model_resolver import (
     list_available_models,
     resolve_model_file,
 )
-from uvr_cli.runner import execute_inference
+from uvr_cli.runner import execute_inference, get_existing_outputs
 
 # Map shorthand precision arguments to UVR canonical precision strings
 PRECISION_MAP = {
     "fp32": MODEL_PRECISION_FP32,
     "fp16": MODEL_PRECISION_FP16,
     "bf16": MODEL_PRECISION_BF16,
-    "fp8": "Performance (FP8-E4M3)",
-    "fp8_e4m3": "Performance (FP8-E4M3)",
-    "nvfp4": "Performance (NVFP4)",
 }
 
 
@@ -109,15 +106,45 @@ def handle_run(args: argparse.Namespace) -> int:
     audio_path = Path(args.audio).resolve()
     output_dir = Path(args.output_dir).resolve()
 
+    if not audio_path.is_file():
+        print(f"[ERROR] Input audio file not found: {audio_path}")
+        return 1
+
     print(f"Separating     : {audio_path.name}")
     print(f"Precision      : {precision}")
     print(f"Output folder  : {output_dir}")
+
+    # Check for existing conflicting output stems
+    existing_outputs = get_existing_outputs(model_data, audio_path, output_dir)
+    overwrite = getattr(args, "overwrite", False)
+
+    if existing_outputs and not overwrite:
+        print(f"\n[!] Output file(s) already exist:")
+        for f in existing_outputs:
+            print(f"  -> {f.name}")
+
+        if not sys.stdin.isatty():
+            print(f"\n[ERROR] Output files already exist. Use '--overwrite' or '-y' to overwrite.")
+            return 1
+
+        try:
+            choice = input("\nOverwrite? [Y/N]: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print("\n[INFO] Operation cancelled.")
+            return 0
+
+        if choice in ("y", "yes"):
+            overwrite = True
+        else:
+            print("[INFO] Separation cancelled. Existing files were preserved.")
+            return 0
 
     stems, is_valid = execute_inference(
         model_data=model_data,
         audio_path=audio_path,
         export_dir=output_dir,
         console_callback=lambda text, base="": print(f"[UVR Core] {text}"),
+        overwrite=overwrite,
     )
 
     if is_valid and stems:
@@ -237,13 +264,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--precision",
         "-p",
         default="fp16",
-        help="Inference precision: fp32, fp16, fp8, nvfp4 (default: fp16)",
+        help="Inference precision: fp32, fp16, bf16 (default: fp16)",
     )
     run_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda:0, cpu (default: cuda:0)")
     run_parser.add_argument("--output-dir", "-o", default="separated_outputs", help="Output directory for stems")
     run_parser.add_argument("--segment-size", type=int, default=None, help="Segment size (MDX chunk size)")
     run_parser.add_argument("--overlap", type=float, default=None, help="Overlap ratio (e.g. 0.25)")
     run_parser.add_argument("--batch-size", type=int, default=1, help="Inference batch size (default: 1)")
+    run_parser.add_argument(
+        "--overwrite",
+        "-y",
+        action="store_true",
+        help="Overwrite existing output stems without prompting",
+    )
 
     # Command: bench
     bench_parser = subparsers.add_parser("bench", help="Run real benchmark with hardware telemetry & metric export")
@@ -253,7 +286,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--precision",
         "-p",
         default="fp16",
-        help="Inference precision: fp32, fp16, fp8, nvfp4 (default: fp16)",
+        help="Inference precision: fp32, fp16, bf16 (default: fp16)",
     )
     bench_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda:0, cpu (default: cuda:0)")
     bench_parser.add_argument("--rounds", "-r", type=int, default=3, help="Number of measurement rounds (default: 3)")

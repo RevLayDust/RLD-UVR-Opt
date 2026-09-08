@@ -1,0 +1,85 @@
+(venv) PS D:\AI\Ultimate Vocal Remover> python -m uvr_cli run -a "D:\AI\UVR\Experiments\exp_1\edited_remixed_audio-2.wav" -m UVR-MDX-NET-Inst_HQ_4.onnx -p fp32 -d cpu --segment-size 4000 --overlap 0.25 -o D:\AI\UVR\Experiments\exp_1\out
+Resolving model: UVR-MDX-NET-Inst_HQ_4.onnx (MDX-Net)
+Separating     : edited_remixed_audio-2.wav
+Precision      : Ultra Quality (FP32)
+Output folder  : D:\AI\UVR\Experiments\exp_1\out
+
+[!] Output file(s) already exist:
+  -> edited_remixed_audio-2_(Instrumental).wav
+  -> edited_remixed_audio-2_(Vocals).wav
+
+Overwrite? [Y/N]: y
+[DIAGNOSTIC] === SeperateMDX.seperate Start ===
+[DIAGNOSTIC] Initial GPU Alloc: 0.00 MB, Reserved: 0.00 MB
+[DIAGNOSTIC] Cache keys currently stored: []
+[DIAGNOSTIC] get_model lookup: D:\AI\Ultimate Vocal Remover\models\MDX_Net_Models\UVR-MDX-NET-Inst_HQ_4.onnx -> normalized: D:\AI\Ultimate Vocal Remover\models\MDX_Net_Models\UVR-MDX-NET-Inst_HQ_4.onnx
+[DIAGNOSTIC] get_model Cache Miss for: D:\AI\Ultimate Vocal Remover\models\MDX_Net_Models\UVR-MDX-NET-Inst_HQ_4.onnx
+Model Cache Store: Resident model cached UVR-MDX-NET-Inst_HQ_4.onnx (precision: Ultra Quality (FP32))
+[PRECISION] === Runtime Precision Report ===
+[PRECISION]   requested_mode: FP32
+[PRECISION]   effective_mode: FP32
+[PRECISION]   model_type: ONNX
+[PRECISION]   execution_provider: ['CPUExecutionProvider']
+[PRECISION]   onnx_input_type: tensor(float)
+[PRECISION]   onnx_output_type: tensor(float)
+[PRECISION]   active_providers: ['CPUExecutionProvider']
+[PRECISION]   [OK] Precision applied correctly: FP32
+[PRECISION] ==============================
+[UVR Core]  Done!
+
+[UVR Core] Running inference...
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\AI\Ultimate Vocal Remover\uvr_cli\__main__.py", line 6, in <module>
+    main()
+  File "D:\AI\Ultimate Vocal Remover\uvr_cli\cli.py", line 330, in main
+    sys.exit(handle_run(args))
+             ^^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\uvr_cli\cli.py", line 142, in handle_run
+    stems, is_valid = execute_inference(
+                      ^^^^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\uvr_cli\runner.py", line 165, in execute_inference    
+    separator.seperate()
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 940, in seperate
+    source = self.demix(mix)
+             ^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 1068, in demix
+    stream_transfer = torch.cuda.Stream(device=self.device)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\venv\Lib\site-packages\torch\cuda\streams.py", line 45, in __new__
+    with torch.cuda.device(device):
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 940, in seperate
+    source = self.demix(mix)
+             ^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 1068, in demix
+    stream_transfer = torch.cuda.Stream(device=self.device)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\venv\Lib\site-packages\torch\cuda\streams.py", line 45  File "D:\AI\Ultimate Vocal Remover\separate.py", line 940, in seperate
+    source = self.demix(mix)
+             ^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 1068, in demix
+    stream_transfer = torch.cuda.Stream(device=self.device)
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 940, in seperate
+    source = self.demix(mix)
+             ^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 1068, in demix
+    stream_transfer = torch.cuda.Stream(device=self.device)
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 940, in seperate
+    source = self.demix(mix)
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 940, in seperate
+    source = self.demix(mix)
+             ^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\separate.py", line 1068, in demix
+    stream_transfer = torch.cuda.Stream(device=self.device)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\venv\Lib\site-packages\torch\cuda\streams.py", line 45, in __new__
+    with torch.cuda.device(device):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\venv\Lib\site-packages\torch\cuda\__init__.py", line 600, in __init__
+    self.idx = _get_device_index(device, optional=True)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\AI\Ultimate Vocal Remover\venv\Lib\site-packages\torch\cuda\_utils.py", line 542, in _get_device_index
+    raise ValueError(f"Expected a cuda device, but got: {device}")
+ValueError: Expected a cuda device, but got: cpu
+[DIAGNOSTIC] === SeperateAttributes Destructor Called for: UVR-MDX-NET-Inst_HQ_4 ===

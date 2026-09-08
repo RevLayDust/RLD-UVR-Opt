@@ -16,6 +16,7 @@ from uvr_cli.model_resolver import (
     list_available_models,
     resolve_model_file,
 )
+from uvr_cli.runner import get_existing_outputs, get_expected_stem_paths
 from uvr_cli.telemetry import TelemetrySampler, collect_system_info
 
 
@@ -104,7 +105,6 @@ class BenchmarkCLITests(unittest.TestCase):
                 "audio_file": "sample.wav",
                 "audio_duration_sec": 10.0,
                 "round": "1",
-                "cache_state": "cold",
                 "total_time_sec": 2.5,
                 "inference_time_sec": 2.5,
                 "speed_factor_rt": 4.0,
@@ -153,6 +153,51 @@ class BenchmarkCLITests(unittest.TestCase):
         self.assertEqual(args_bench.command, "bench")
         self.assertEqual(args_bench.rounds, 3)
         self.assertEqual(args_bench.warmup, 1)
+
+        # Test 'run' with --overwrite and -y
+        args_run_ow = parser.parse_args([
+            "run",
+            "--audio", "test.wav",
+            "--model", "UVR-MDX-NET-Inst_HQ_4.onnx",
+            "--overwrite",
+        ])
+        self.assertTrue(args_run_ow.overwrite)
+
+        args_run_y = parser.parse_args([
+            "run",
+            "-a", "test.wav",
+            "-m", "UVR-MDX-NET-Inst_HQ_4.onnx",
+            "-y",
+        ])
+        self.assertTrue(args_run_y.overwrite)
+
+    def test_expected_stem_paths_and_existing_outputs(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            dummy_audio = temp_path / "song.wav"
+            dummy_audio.touch()
+
+            model_data = HeadlessModelData(
+                primary_stem="Instrumental",
+                secondary_stem="Vocals",
+            )
+
+            expected = get_expected_stem_paths(model_data, dummy_audio, temp_path)
+            expected_names = [p.name for p in expected]
+            self.assertIn("song_(Instrumental).wav", expected_names)
+            self.assertIn("song_(Vocals).wav", expected_names)
+
+            # Initially no files exist
+            existing = get_existing_outputs(model_data, dummy_audio, temp_path)
+            self.assertEqual(len(existing), 0)
+
+            # Create one stem
+            stem1 = temp_path / "song_(Instrumental).wav"
+            stem1.touch()
+
+            existing = get_existing_outputs(model_data, dummy_audio, temp_path)
+            self.assertEqual(len(existing), 1)
+            self.assertEqual(existing[0].name, "song_(Instrumental).wav")
 
     def test_synthetic_audio_creation(self):
         audio_path = create_synthetic_audio(duration_sec=1.0, samplerate=44100)

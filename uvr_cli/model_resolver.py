@@ -218,13 +218,16 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 
 def list_available_models() -> List[Dict[str, Any]]:
-    """Scan and list all installed models across MDX, VR, and Demucs architectures."""
+    """Scan and list all installed ONNX models in MDX_Net_Models (non-recursive).
+
+    Per MVP spec §3.1, only `.onnx` files in `models/MDX_Net_Models` are
+    discovered.  Non-ONNX model formats are out of scope for this MVP.
+    """
     results: List[Dict[str, Any]] = []
 
-    # MDX Models
     if MDX_MODELS_DIR.is_dir():
         for file in MDX_MODELS_DIR.iterdir():
-            if file.is_file() and file.suffix.lower() in [ONNX, CKPT]:
+            if file.is_file() and file.suffix.lower() == ONNX:
                 results.append({
                     "name": file.name,
                     "basename": file.stem,
@@ -234,81 +237,43 @@ def list_available_models() -> List[Dict[str, Any]]:
                     "format": file.suffix.lower(),
                 })
 
-    # VR Models
-    if VR_MODELS_DIR.is_dir():
-        for file in VR_MODELS_DIR.iterdir():
-            if file.is_file() and file.suffix.lower() in [PTH]:
-                results.append({
-                    "name": file.name,
-                    "basename": file.stem,
-                    "path": str(file),
-                    "architecture": VR_ARCH_TYPE,
-                    "size_mb": round(file.stat().st_size / (1024 * 1024), 2),
-                    "format": file.suffix.lower(),
-                })
-
-    # Demucs Models
-    if DEMUCS_MODELS_DIR.is_dir():
-        for file in DEMUCS_MODELS_DIR.iterdir():
-            if file.is_file() and file.suffix.lower() in [".th", YAML]:
-                results.append({
-                    "name": file.name,
-                    "basename": file.stem,
-                    "path": str(file),
-                    "architecture": DEMUCS_ARCH_TYPE,
-                    "size_mb": round(file.stat().st_size / (1024 * 1024), 2),
-                    "format": file.suffix.lower(),
-                })
-    if DEMUCS_NEWER_REPO_DIR.is_dir():
-        for file in DEMUCS_NEWER_REPO_DIR.iterdir():
-            if file.is_file() and file.suffix.lower() in [YAML, ".th"]:
-                results.append({
-                    "name": file.name,
-                    "basename": file.stem,
-                    "path": str(file),
-                    "architecture": DEMUCS_ARCH_TYPE,
-                    "size_mb": round(file.stat().st_size / (1024 * 1024), 2),
-                    "format": file.suffix.lower(),
-                })
-
     return results
 
 
 def resolve_model_file(model_identifier: str) -> Tuple[Path, str]:
-    """Resolve a model name or file path to an existing file and its architecture."""
+    """Resolve an ONNX model name or file path to an existing file and its architecture.
+
+    Per MVP spec §3.1, only `.onnx` files are accepted.  Non-ONNX model
+    extensions are rejected with a clear error.
+    """
     # 1. Direct path check
     direct_path = Path(model_identifier).resolve()
     if direct_path.is_file():
         ext = direct_path.suffix.lower()
-        if ext in [ONNX, CKPT]:
-            return direct_path, MDX_ARCH_TYPE
-        if ext in [PTH]:
-            return direct_path, VR_ARCH_TYPE
-        if ext in [YAML, ".th"]:
-            return direct_path, DEMUCS_ARCH_TYPE
+        if ext != ONNX:
+            raise ValueError(
+                f"Non-ONNX model format '{ext}' is not supported in this MVP. "
+                f"Only .onnx models are accepted. Got: {direct_path.name}"
+            )
         return direct_path, MDX_ARCH_TYPE
 
-    # 2. Search by filename or stem in MDX_Net_Models
-    for candidate in [MDX_MODELS_DIR / model_identifier, MDX_MODELS_DIR / f"{model_identifier}.onnx", MDX_MODELS_DIR / f"{model_identifier}.ckpt"]:
-        if candidate.is_file():
+    # 2. Search by filename or stem in MDX_Net_Models (.onnx only)
+    for candidate in [
+        MDX_MODELS_DIR / model_identifier,
+        MDX_MODELS_DIR / f"{model_identifier}.onnx",
+    ]:
+        if candidate.is_file() and candidate.suffix.lower() == ONNX:
             return candidate, MDX_ARCH_TYPE
 
-    # 3. Search in VR_Models
-    for candidate in [VR_MODELS_DIR / model_identifier, VR_MODELS_DIR / f"{model_identifier}.pth"]:
-        if candidate.is_file():
-            return candidate, VR_ARCH_TYPE
-
-    # 4. Search in Demucs_Models
-    for candidate in [DEMUCS_MODELS_DIR / model_identifier, DEMUCS_NEWER_REPO_DIR / model_identifier, DEMUCS_NEWER_REPO_DIR / f"{model_identifier}.yaml"]:
-        if candidate.is_file():
-            return candidate, DEMUCS_ARCH_TYPE
-
-    # 5. Fallback search through all available models
+    # 3. Fallback search through discovered ONNX models
     for m in list_available_models():
         if model_identifier.lower() in [m["name"].lower(), m["basename"].lower()]:
             return Path(m["path"]), m["architecture"]
 
-    raise FileNotFoundError(f"Model '{model_identifier}' could not be located in models directories.")
+    raise FileNotFoundError(
+        f"ONNX model '{model_identifier}' could not be located in "
+        f"models/MDX_Net_Models/. Ensure the .onnx file is present."
+    )
 
 
 def build_headless_model_data(

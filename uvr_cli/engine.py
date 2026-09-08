@@ -69,11 +69,10 @@ class BenchmarkEngine:
                 current_iter += 1
                 is_warmup_run = current_iter <= self.warmup
                 round_number = current_iter if is_warmup_run else (current_iter - self.warmup)
-                cache_state = "cold" if current_iter == 1 else "warm"
                 run_label = f"Warmup {round_number}" if is_warmup_run else f"Measurement Round {round_number}/{self.rounds}"
 
                 if verbose:
-                    print(f"--> Starting {run_label} (Cache: {cache_state})...")
+                    print(f"--> Starting {run_label}...")
 
                 round_export_dir = temp_stems_dir / f"round_{current_iter}"
                 round_export_dir.mkdir(parents=True, exist_ok=True)
@@ -102,7 +101,6 @@ class BenchmarkEngine:
                     "iteration": current_iter,
                     "is_warmup": is_warmup_run,
                     "round": round_number,
-                    "cache_state": cache_state,
                     "total_time_sec": total_time,
                     "speed_factor_rt": speed_factor,
                     "is_valid": is_valid,
@@ -123,7 +121,6 @@ class BenchmarkEngine:
                     "audio_file": self.audio_path.name,
                     "audio_duration_sec": duration_sec,
                     "round": f"warmup_{round_number}" if is_warmup_run else str(round_number),
-                    "cache_state": cache_state,
                     "total_time_sec": total_time,
                     "inference_time_sec": total_time,  # Pure separator execution
                     "speed_factor_rt": speed_factor,

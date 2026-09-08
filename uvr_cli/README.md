@@ -52,7 +52,17 @@ venv\Scripts\python.exe -m uvr_cli run `
     --device cuda:0 `
     --output-dir "separated_outputs"
 ```
-Supported precisions: `fp32`, `fp16`, `fp8_e4m3`, `nvfp4`.
+Supported precisions: `fp32`, `fp16`, `bf16`.
+
+If destination stem files already exist in `--output-dir`, the CLI will prompt:
+`Overwrite? [Y/N]: `
+To automatically overwrite without interactive confirmation, pass `--overwrite` or `-y`:
+```powershell
+venv\Scripts\python.exe -m uvr_cli run `
+    --audio "path/to/song.wav" `
+    --model "UVR-MDX-NET-Inst_HQ_4.onnx" `
+    --overwrite
+```
 
 ### 3. Real Performance Benchmark
 Benchmark one or more models across multiple rounds with warmup:
