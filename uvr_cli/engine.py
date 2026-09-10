@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import shutil
+import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,6 +17,33 @@ from .exporter import export_benchmark_csv, export_benchmark_json
 from .model_resolver import HeadlessModelData
 from .runner import execute_inference, get_audio_metadata
 from .telemetry import TelemetrySampler, collect_system_info, sync_cuda
+
+
+def _get_git_commit() -> str:
+    """Return the current Git commit SHA, or 'unknown' if unavailable."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True, text=True, timeout=5,
+            cwd=str(Path(__file__).resolve().parent.parent),
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return "unknown"
+
+
+def _compute_file_sha256(file_path: Path) -> str:
+    """Compute a SHA-256 hash of a file."""
+    sha = hashlib.sha256()
+    try:
+        with file_path.open("rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                sha.update(chunk)
+        return sha.hexdigest()
+    except Exception:
+        return "unknown"
 
 
 class BenchmarkEngine:
@@ -54,6 +84,10 @@ class BenchmarkEngine:
 
         system_info = collect_system_info(self.device_index)
         audio_info = get_audio_metadata(self.audio_path)
+
+        git_commit = _get_git_commit()
+        python_version = sys.version.split()[0]
+        input_hash = _compute_file_sha256(self.audio_path)
 
         all_runs_data: List[Dict[str, Any]] = []
         csv_rows: List[Dict[str, Any]] = []
@@ -113,11 +147,15 @@ class BenchmarkEngine:
                     "session_id": self.session_id,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                     "gpu_name": system_info.get("gpu_name", "N/A"),
-                    "cpu_name": system_info.get("cpu", "N/A"),
+                    "cpu_name": system_info.get("cpu_name") or system_info.get("cpu", "N/A"),
                     "model_name": self.model_data.model_name,
                     "model_hash": self.model_data.model_hash,
                     "backend": self.model_data.process_method,
                     "precision": self.model_data.model_precision,
+                    "device": getattr(self.model_data, "device_name", "cpu"),
+                    "segment_size": getattr(self.model_data, "mdx_segment_size", None),
+                    "overlap": getattr(self.model_data, "overlap", None),
+                    "batch_size": getattr(self.model_data, "mdx_batch_size", 1),
                     "audio_file": self.audio_path.name,
                     "audio_duration_sec": duration_sec,
                     "round": f"warmup_{round_number}" if is_warmup_run else str(round_number),
@@ -130,6 +168,9 @@ class BenchmarkEngine:
                     "peak_gpu_util_percent": telemetry.get("peak_gpu_utilization_percent", 0.0),
                     "avg_cpu_util_percent": telemetry.get("avg_process_cpu_percent", 0.0),
                     "peak_process_ram_mb": telemetry.get("peak_process_ram_mb", 0.0),
+                    "git_commit": git_commit,
+                    "python_version": python_version,
+                    "input_hash": input_hash,
                     "status": "COMPLETED" if is_valid else "VALIDATION_FAILED",
                 }
                 csv_rows.append(csv_row)
@@ -180,9 +221,14 @@ class BenchmarkEngine:
                 "hash": self.model_data.model_hash,
                 "backend": self.model_data.process_method,
                 "precision": self.model_data.model_precision,
+                "device": getattr(self.model_data, "device_name", "cpu"),
                 "segment_size": getattr(self.model_data, "mdx_segment_size", None),
+                "overlap": getattr(self.model_data, "overlap", None),
                 "batch_size": getattr(self.model_data, "mdx_batch_size", 1),
             },
+            "git_commit": git_commit,
+            "python_version": python_version,
+            "input_hash": input_hash,
             "summary": summary,
             "runs": all_runs_data,
         }

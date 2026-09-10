@@ -31,6 +31,49 @@ except Exception:
     NVML_AVAILABLE = False
 
 
+def get_cpu_name() -> str:
+    """Detect and report the actual human-readable CPU model name."""
+    system = platform.system()
+    try:
+        if system == "Windows":
+            try:
+                import winreg
+                key = winreg.OpenKey(
+                    winreg.HKEY_LOCAL_MACHINE,
+                    r"HARDWARE\DESCRIPTION\System\CentralProcessor\0",
+                )
+                name, _ = winreg.QueryValueEx(key, "ProcessorNameString")
+                winreg.CloseKey(key)
+                if name and isinstance(name, str) and name.strip():
+                    return " ".join(name.strip().split())
+            except Exception:
+                pass
+        elif system == "Darwin":
+            try:
+                import subprocess
+                cmd = ["sysctl", "-n", "machdep.cpu.brand_string"]
+                output = subprocess.check_output(cmd, encoding="utf-8", stderr=subprocess.DEVNULL)
+                if output and output.strip():
+                    return " ".join(output.strip().split())
+            except Exception:
+                pass
+        elif system == "Linux":
+            try:
+                with open("/proc/cpuinfo", "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        if line.strip().startswith("model name"):
+                            parts = line.split(":", 1)
+                            if len(parts) > 1 and parts[1].strip():
+                                return " ".join(parts[1].strip().split())
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    fallback = platform.processor() or platform.machine() or "Unknown CPU"
+    return " ".join(fallback.strip().split()) if isinstance(fallback, str) else "Unknown CPU"
+
+
 def sync_cuda(device_index: int = 0) -> None:
     """Synchronize CUDA device if available."""
     if torch.cuda.is_available():
@@ -67,9 +110,12 @@ def collect_system_info(device_index: int = 0) -> Dict[str, Any]:
         except Exception:
             pass
 
+    cpu_name = get_cpu_name()
+
     return {
         "os": platform.platform(),
-        "cpu": platform.processor() or platform.machine() or "Unknown CPU",
+        "cpu": cpu_name,
+        "cpu_name": cpu_name,
         "cpu_count_logical": psutil.cpu_count(logical=True) or 0,
         "cpu_count_physical": psutil.cpu_count(logical=False) or 0,
         "system_ram_gb": round(psutil.virtual_memory().total / (1024**3), 2),

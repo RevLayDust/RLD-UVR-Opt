@@ -45,6 +45,10 @@ CSV_FIELDS = [
     "model_hash",
     "backend",
     "precision",
+    "device",
+    "segment_size",
+    "overlap",
+    "batch_size",
     "audio_file",
     "audio_duration_sec",
     "round",
@@ -57,6 +61,9 @@ CSV_FIELDS = [
     "peak_gpu_util_percent",
     "avg_cpu_util_percent",
     "peak_process_ram_mb",
+    "git_commit",
+    "python_version",
+    "input_hash",
     "status",
 ]
 

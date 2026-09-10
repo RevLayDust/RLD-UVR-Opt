@@ -11,19 +11,21 @@ from .model_resolver import (
     list_available_models,
     resolve_model_file,
 )
+from .progress import InferenceProgressBar
 from .runner import (
     execute_inference,
     get_audio_metadata,
     get_existing_outputs,
     get_expected_stem_paths,
 )
-from .telemetry import TelemetrySampler, collect_system_info, sync_cuda
+from .telemetry import TelemetrySampler, collect_system_info, get_cpu_name, sync_cuda
 
 __version__ = "2.0.0"
 
 __all__ = [
     "BenchmarkEngine",
     "HeadlessModelData",
+    "InferenceProgressBar",
     "TelemetrySampler",
     "build_headless_model_data",
     "collect_system_info",
@@ -32,6 +34,7 @@ __all__ = [
     "export_benchmark_csv",
     "export_benchmark_json",
     "get_audio_metadata",
+    "get_cpu_name",
     "get_existing_outputs",
     "get_expected_stem_paths",
     "list_available_models",

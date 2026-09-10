@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
-from uvr_cli.cli import build_parser, create_synthetic_audio, normalize_cli_precision
+from uvr_cli.cli import build_parser, create_synthetic_audio, format_elapsed_time, normalize_cli_precision
 from uvr_cli.exporter import export_benchmark_csv, export_benchmark_json, sanitize_path
 from uvr_cli.model_resolver import (
     HeadlessModelData,
@@ -16,8 +18,9 @@ from uvr_cli.model_resolver import (
     list_available_models,
     resolve_model_file,
 )
+from uvr_cli.progress import InferenceProgressBar
 from uvr_cli.runner import get_existing_outputs, get_expected_stem_paths
-from uvr_cli.telemetry import TelemetrySampler, collect_system_info
+from uvr_cli.telemetry import TelemetrySampler, collect_system_info, get_cpu_name
 
 
 class BenchmarkCLITests(unittest.TestCase):
@@ -67,8 +70,16 @@ class BenchmarkCLITests(unittest.TestCase):
         info = collect_system_info(device_index=0)
         self.assertIn("os", info)
         self.assertIn("cpu", info)
+        self.assertIn("cpu_name", info)
         self.assertIn("system_ram_gb", info)
         self.assertIn("python_version", info)
+        self.assertEqual(info["cpu"], info["cpu_name"])
+        self.assertGreater(len(info["cpu_name"]), 0)
+
+    def test_get_cpu_name(self):
+        cpu_name = get_cpu_name()
+        self.assertIsInstance(cpu_name, str)
+        self.assertGreater(len(cpu_name), 0)
 
     def test_path_sanitization(self):
         raw_path = r"C:\Users\JohnDoe\AppData\Local\test.wav"
@@ -102,6 +113,10 @@ class BenchmarkCLITests(unittest.TestCase):
                 "model_hash": "abc123hash",
                 "backend": "MDX-Net",
                 "precision": "Performance (FP16)",
+                "device": "cuda:0",
+                "segment_size": 256,
+                "overlap": 0.25,
+                "batch_size": 1,
                 "audio_file": "sample.wav",
                 "audio_duration_sec": 10.0,
                 "round": "1",
@@ -114,6 +129,9 @@ class BenchmarkCLITests(unittest.TestCase):
                 "peak_gpu_util_percent": 95.0,
                 "avg_cpu_util_percent": 50.0,
                 "peak_process_ram_mb": 512.0,
+                "git_commit": "abc1234deadbeef",
+                "python_version": "3.11.0",
+                "input_hash": "sha256_dummy_hash",
                 "status": "COMPLETED",
             }]
             export_benchmark_csv(dummy_rows, csv_file)
@@ -123,6 +141,13 @@ class BenchmarkCLITests(unittest.TestCase):
                 rows = list(reader)
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["model_name"], "test_model.onnx")
+            self.assertEqual(rows[0]["device"], "cuda:0")
+            self.assertEqual(rows[0]["segment_size"], "256")
+            self.assertEqual(rows[0]["overlap"], "0.25")
+            self.assertEqual(rows[0]["batch_size"], "1")
+            self.assertEqual(rows[0]["git_commit"], "abc1234deadbeef")
+            self.assertEqual(rows[0]["python_version"], "3.11.0")
+            self.assertEqual(rows[0]["input_hash"], "sha256_dummy_hash")
 
     def test_cli_argument_parsing(self):
         parser = build_parser()
@@ -209,6 +234,83 @@ class BenchmarkCLITests(unittest.TestCase):
                 audio_path.unlink()
             if audio_path.parent.is_dir():
                 audio_path.parent.rmdir()
+
+    def test_progress_bar_renders_block_style_and_fallback(self):
+        # Unicode block mode
+        buf_unicode = io.StringIO()
+        bar_uni = InferenceProgressBar(stream=buf_unicode, bar_width=10, ascii_only=False)
+        bar_uni.update(step=0.1, inference_iterations=0.4, current_chunk=5, total_chunks=10)
+        content_uni = buf_unicode.getvalue()
+        self.assertIn("5/10 chunks (50.0%)", content_uni)
+        # Should contain full blocks
+        self.assertTrue("█" in content_uni or "#" in content_uni)
+
+        # ASCII fallback mode
+        buf_ascii = io.StringIO()
+        bar_ascii = InferenceProgressBar(stream=buf_ascii, bar_width=10, ascii_only=True)
+        bar_ascii.update(step=0.1, inference_iterations=0.4, current_chunk=5, total_chunks=10)
+        content_ascii = buf_ascii.getvalue()
+        self.assertIn("[#####-----]", content_ascii)
+        self.assertIn("5/10 chunks (50.0%)", content_ascii)
+
+    def test_progress_bar_speed_and_eta_calculation(self):
+        buf = io.StringIO()
+        bar = InferenceProgressBar(stream=buf, bar_width=10, ascii_only=True)
+        
+        # Chunk 1: speed might not be established yet or ETA --:--
+        bar.update(step=0.1, inference_iterations=0.08, current_chunk=1, total_chunks=10)
+        content1 = buf.getvalue()
+        self.assertIn("1/10 chunks (10.0%)", content1)
+
+        # Simulate time passing for subsequent chunks
+        time.sleep(0.06)
+        bar.update(step=0.1, inference_iterations=0.40, current_chunk=5, total_chunks=10)
+        content2 = buf.getvalue()
+        self.assertIn("5/10 chunks (50.0%)", content2)
+        self.assertIn("chunks/s", content2)
+        self.assertIn("ETA:", content2)
+
+    def test_progress_bar_in_place_updates_and_no_newline_spam(self):
+        buf = io.StringIO()
+        bar = InferenceProgressBar(stream=buf, bar_width=10, ascii_only=True)
+
+        for i in range(1, 5):
+            bar.update(step=0.1, inference_iterations=0.2 * i, current_chunk=i, total_chunks=5)
+        
+        output = buf.getvalue()
+        # All in-progress updates must start with \r carriage returns
+        self.assertIn("\r", output)
+        # Should not have finished with newline yet before reaching final chunk
+        self.assertFalse(output.endswith("\n"))
+
+        # Reach final chunk (5/5)
+        bar.update(step=0.1, inference_iterations=0.8, current_chunk=5, total_chunks=5)
+        final_output = buf.getvalue()
+        # Must conclude with a single newline when finished
+        self.assertTrue(final_output.endswith("\n"))
+
+    def test_progress_bar_write_message_interleaving(self):
+        buf = io.StringIO()
+        bar = InferenceProgressBar(stream=buf, bar_width=10, ascii_only=True)
+        bar.update(step=0.1, inference_iterations=0.2, current_chunk=1, total_chunks=4)
+
+        # Interleave a console message — write_message closes the bar first
+        bar.write_message("[UVR Core] Intermediate notice")
+        output = buf.getvalue()
+        self.assertIn("[UVR Core] Intermediate notice\n", output)
+        # Bar should be closed after write_message
+        self.assertTrue(bar._closed)
+
+    def test_format_elapsed_time(self):
+        # Under 60 seconds
+        self.assertEqual(format_elapsed_time(0.0), "0.00s")
+        self.assertEqual(format_elapsed_time(3.42), "3.42s")
+        self.assertEqual(format_elapsed_time(59.99), "59.99s")
+        # 60 seconds and above
+        self.assertEqual(format_elapsed_time(60.0), "1m 0.00s")
+        self.assertEqual(format_elapsed_time(72.38), "1m 12.38s")
+        self.assertEqual(format_elapsed_time(125.5), "2m 5.50s")
+        self.assertEqual(format_elapsed_time(3661.12), "61m 1.12s")
 
 
 if __name__ == "__main__":

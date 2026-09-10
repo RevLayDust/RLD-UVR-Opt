@@ -304,6 +304,7 @@ def build_headless_model_data(
         model_hash=model_hash,
         model_precision=norm_precision,
         device_set=device_set,
+        device_name=device,
         is_gpu_conversion=0 if is_gpu else -1,
     )
 
