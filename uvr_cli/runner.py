@@ -96,7 +96,7 @@ def execute_inference(
     model_data: HeadlessModelData,
     audio_path: str | Path,
     export_dir: str | Path,
-    progress_callback: Optional[Callable[[float, float], None]] = None,
+    progress_callback: Optional[Callable[..., None]] = None,
     console_callback: Optional[Callable[[str, str], None]] = None,
     overwrite: bool = False,
 ) -> Tuple[List[Path], bool]:
@@ -125,9 +125,35 @@ def execute_inference(
     existing_files = set(export_path.glob("*"))
     existing_mtimes = {f: f.stat().st_mtime for f in existing_files if f.is_file()}
 
+    separator: Optional[Any] = None
+    chunk_counter = 0
+    calculated_total_chunks = 0
+
     def default_progress(step: float, inference_iterations: float = 0.0) -> None:
+        nonlocal chunk_counter, calculated_total_chunks
         if progress_callback:
-            progress_callback(step, inference_iterations)
+            current_chunk = 0
+            if inference_iterations > 0.0:
+                if separator is not None and getattr(separator, "progress_value", 0) > 0:
+                    current_chunk = separator.progress_value
+                else:
+                    chunk_counter += 1
+                    current_chunk = chunk_counter
+
+                if calculated_total_chunks == 0:
+                    ratio = inference_iterations / 0.8
+                    if ratio > 0.0:
+                        calculated_total_chunks = max(current_chunk, round(current_chunk / ratio))
+
+            try:
+                progress_callback(
+                    step,
+                    inference_iterations,
+                    current_chunk=current_chunk,
+                    total_chunks=calculated_total_chunks,
+                )
+            except TypeError:
+                progress_callback(step, inference_iterations)
 
     def default_console(text: str, base_text: str = "") -> None:
         if console_callback:
@@ -162,7 +188,14 @@ def execute_inference(
         raise ValueError(f"Unsupported architecture: {model_data.process_method}")
 
     # Run inference directly
-    separator.seperate()
+    try:
+        separator.seperate()
+    finally:
+        if hasattr(progress_callback, "close"):
+            try:
+                progress_callback.close()
+            except Exception:
+                pass
 
     # Detect generated stems:
     all_current_files = set(export_path.glob("*"))

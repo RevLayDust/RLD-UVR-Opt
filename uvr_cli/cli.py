@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 import tempfile
 import wave
 from pathlib import Path
@@ -24,6 +25,7 @@ from uvr_cli.model_resolver import (
     list_available_models,
     resolve_model_file,
 )
+from uvr_cli.progress import InferenceProgressBar
 from uvr_cli.runner import execute_inference, get_existing_outputs
 
 # Map shorthand precision arguments to UVR canonical precision strings
@@ -46,6 +48,19 @@ def normalize_cli_precision(prec_arg: Optional[str]) -> str:
         if clean == opt.lower():
             return opt
     return MODEL_PRECISION_DEFAULT
+
+
+def format_elapsed_time(seconds: float) -> str:
+    """Format elapsed seconds into a human-readable string.
+
+    Under 60s:  '3.42s'
+    60s or more: '1m 12.38s'
+    """
+    if seconds < 60.0:
+        return f"{seconds:.2f}s"
+    minutes = int(seconds // 60)
+    remaining = seconds - (minutes * 60)
+    return f"{minutes}m {remaining:.2f}s"
 
 
 def create_synthetic_audio(duration_sec: float = 2.0, samplerate: int = 44100) -> Path:
@@ -139,18 +154,28 @@ def handle_run(args: argparse.Namespace) -> int:
             print("[INFO] Separation cancelled. Existing files were preserved.")
             return 0
 
+    progress_bar = InferenceProgressBar()
+
+    def console_handler(text: str, base: str = "") -> None:
+        progress_bar.write_message(f"[UVR Core] {text}")
+
+    t_start = time.perf_counter()
     stems, is_valid = execute_inference(
         model_data=model_data,
         audio_path=audio_path,
         export_dir=output_dir,
-        console_callback=lambda text, base="": print(f"[UVR Core] {text}"),
+        progress_callback=progress_bar,
+        console_callback=console_handler,
         overwrite=overwrite,
     )
+    t_elapsed = time.perf_counter() - t_start
 
     if is_valid and stems:
         print(f"\n[OK] Separation completed successfully! Generated {len(stems)} stem(s):")
         for stem in stems:
             print(f"  -> {stem.name} ({round(stem.stat().st_size / (1024*1024), 2)} MB)")
+        print(f"\nProcess complete")
+        print(f"Time elapsed: {format_elapsed_time(t_elapsed)}")
         return 0
     else:
         print(f"\n[ERROR] Separation completed but no valid outputs were generated.")
