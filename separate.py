@@ -452,7 +452,7 @@ def clear_gpu_cache():
         torch.cuda.empty_cache()
 
 warnings.filterwarnings("ignore")
-cpu = torch.device('cpu')
+cpu = 'cpu'
 
 class SeperateAttributes:
     def __init__(self, model_data: ModelData, 
