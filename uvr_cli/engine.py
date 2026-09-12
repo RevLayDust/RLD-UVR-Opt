@@ -153,9 +153,13 @@ class BenchmarkEngine:
                     "backend": self.model_data.process_method,
                     "precision": self.model_data.model_precision,
                     "device": getattr(self.model_data, "device_name", "cpu"),
-                    "segment_size": getattr(self.model_data, "mdx_segment_size", None),
-                    "overlap": getattr(self.model_data, "overlap", None),
-                    "batch_size": getattr(self.model_data, "mdx_batch_size", 1),
+                    "segment_size": getattr(self.model_data, "mdx_segment_size", None) or getattr(self.model_data, "segment_size", None),
+                    "overlap": (
+                        self.model_data.overlap_mdx
+                        if getattr(self.model_data, "overlap_mdx", "Default") != "Default"
+                        else getattr(self.model_data, "overlap", 0.25)
+                    ),
+                    "batch_size": getattr(self.model_data, "mdx_batch_size", getattr(self.model_data, "batch_size", 1)),
                     "audio_file": self.audio_path.name,
                     "audio_duration_sec": duration_sec,
                     "round": f"warmup_{round_number}" if is_warmup_run else str(round_number),
@@ -222,9 +226,13 @@ class BenchmarkEngine:
                 "backend": self.model_data.process_method,
                 "precision": self.model_data.model_precision,
                 "device": getattr(self.model_data, "device_name", "cpu"),
-                "segment_size": getattr(self.model_data, "mdx_segment_size", None),
-                "overlap": getattr(self.model_data, "overlap", None),
-                "batch_size": getattr(self.model_data, "mdx_batch_size", 1),
+                "segment_size": getattr(self.model_data, "mdx_segment_size", None) or getattr(self.model_data, "segment_size", None),
+                "overlap": (
+                    self.model_data.overlap_mdx
+                    if getattr(self.model_data, "overlap_mdx", "Default") != "Default"
+                    else getattr(self.model_data, "overlap", 0.25)
+                ),
+                "batch_size": getattr(self.model_data, "mdx_batch_size", getattr(self.model_data, "batch_size", 1)),
             },
             "git_commit": git_commit,
             "python_version": python_version,

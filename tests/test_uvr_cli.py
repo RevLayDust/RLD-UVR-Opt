@@ -52,6 +52,24 @@ class BenchmarkCLITests(unittest.TestCase):
         self.assertEqual(model_data.model_precision, "Performance (FP16)")
         self.assertIsNotNone(model_data.model_hash)
 
+        # Test custom parameters (overlap, segment_size, batch_size)
+        model_data_custom = build_headless_model_data(
+            model_path=path,
+            architecture=arch,
+            precision="Ultra Quality (FP32)",
+            device="cuda:0",
+            segment_size=4000,
+            overlap=0.75,
+            batch_size=2,
+        )
+        self.assertEqual(model_data_custom.overlap, 0.75)
+        self.assertEqual(model_data_custom.overlap_mdx, 0.75)
+        self.assertEqual(model_data_custom.mdx_segment_size, 4000)
+        self.assertEqual(model_data_custom.segment_size, 4000)
+        self.assertEqual(model_data_custom.mdx_batch_size, 2)
+        self.assertEqual(model_data_custom.batch_size, 2)
+        self.assertEqual(model_data_custom.device_name, "cuda:0")
+
     def test_telemetry_sampler_lifecycle(self):
         sampler = TelemetrySampler(device_index=0, interval_sec=0.05)
         sampler.start()
@@ -174,10 +192,16 @@ class BenchmarkCLITests(unittest.TestCase):
             "--model", "UVR-MDX-NET-Inst_HQ_4.onnx",
             "--rounds", "3",
             "--warmup", "1",
+            "--segment-size", "4000",
+            "--overlap", "0.75",
+            "--batch-size", "2",
         ])
         self.assertEqual(args_bench.command, "bench")
         self.assertEqual(args_bench.rounds, 3)
         self.assertEqual(args_bench.warmup, 1)
+        self.assertEqual(args_bench.segment_size, 4000)
+        self.assertEqual(args_bench.overlap, 0.75)
+        self.assertEqual(args_bench.batch_size, 2)
 
         # Test 'run' with --overwrite and -y
         args_run_ow = parser.parse_args([

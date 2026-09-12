@@ -294,6 +294,14 @@ def build_headless_model_data(
     is_gpu = "cuda" in device.lower() or "directml" in device.lower()
     device_set = device.split(":")[-1] if ":" in device else "0"
 
+    clean_prec = precision.strip().lower()
+    if clean_prec in ("fp32", "32"):
+        precision = MODEL_PRECISION_FP32
+    elif clean_prec in ("fp16", "16"):
+        precision = MODEL_PRECISION_FP16
+    elif clean_prec in ("bf16",):
+        precision = MODEL_PRECISION_BF16
+
     norm_precision = normalize_model_precision(precision)
 
     data = HeadlessModelData(
@@ -308,13 +316,23 @@ def build_headless_model_data(
         is_gpu_conversion=0 if is_gpu else -1,
     )
 
+    if segment_size is not None:
+        data.segment_size = segment_size
+        data.mdx_segment_size = segment_size
+
+    if overlap is not None:
+        data.overlap = overlap
+        data.overlap_mdx = overlap
+        try:
+            data.overlap_mdx23 = int(overlap)
+        except Exception:
+            pass
+
+    data.batch_size = batch_size
+    data.mdx_batch_size = batch_size
+
     if architecture == MDX_ARCH_TYPE:
         data.is_mdx_ckpt = model_name.endswith(CKPT)
-        if segment_size is not None:
-            data.mdx_segment_size = segment_size
-        if overlap is not None:
-            data.overlap_mdx = overlap
-        data.mdx_batch_size = batch_size
 
         # Check for model settings in hash json, then model_data.json
         hash_file = MDX_HASH_DIR / f"{model_hash}.json"
