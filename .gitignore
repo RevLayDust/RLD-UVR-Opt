@@ -11,7 +11,9 @@ venv/
 .venv/
 .agents/
 benchmark_cache/
-benchmark_results/
+
+output/*
 
 uvr_run.log
 data.pkl
+error.log
