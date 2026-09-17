@@ -1,4 +1,4 @@
-VERSION = 'v5.6.0'
-PATCH = 'UVR_Patch_9_29_23_1_39'
-PATCH_MAC = 'UVR_Patch_9_29_23_1_39'
-PATCH_LINUX = 'UVR_Patch_9_29_23_1_39'
+VERSION = 'v0.1.0-beta'
+PATCH = 'RLUV_20260915_2010' # represent RLUV_yyyymmdd_HHMM (year, month, day, hour, minute)
+PATCH_MAC = 'Not yet available'
+PATCH_LINUX = 'Not yet available'

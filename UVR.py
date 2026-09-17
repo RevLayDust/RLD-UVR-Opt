@@ -1525,7 +1525,7 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         self.download_validate_code()
         self.delete_temps(is_start_up=True)
         self.ensemble_listbox_Option.configure(state=tk.DISABLED)
-        self.command_Text.write(f'Ultimate Vocal Remover {VERSION} [{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}]')
+        self.command_Text.write(f'UVR-Opt {VERSION} [{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}]')
         self.update_checkbox_text = lambda:self.selection_action_process_method(self.chosen_process_method_var.get())
         self.check_dual_paths()
         if not is_windows:
@@ -3334,9 +3334,10 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         is_normalization_Option.grid()
         self.help_hints(is_normalization_Option, text=IS_NORMALIZATION_HELP)
         
-        is_adaptive_chunk_Option = ttk.Checkbutton(settings_menu_format_Frame, text="Adaptive Chunk Scheduler", width=GEN_SETTINGS_WIDTH, variable=self.is_adaptive_chunk_var) 
-        is_adaptive_chunk_Option.grid()
-        self.help_hints(is_adaptive_chunk_Option, text="Dynamically optimize chunk size based on available VRAM and system memory to prevent OOM and maximize speed.")
+        # Adaptive Chunk Scheduler is currently not working properly; disabled for now.
+        # is_adaptive_chunk_Option = ttk.Checkbutton(settings_menu_format_Frame, text="Adaptive Chunk Scheduler", width=GEN_SETTINGS_WIDTH, variable=self.is_adaptive_chunk_var) 
+        # is_adaptive_chunk_Option.grid()
+        # self.help_hints(is_adaptive_chunk_Option, text="Dynamically optimize chunk size based on available VRAM and system memory to prevent OOM and maximize speed.")
         
         change_model_default_Button = ttk.Button(settings_menu_format_Frame, text=CHANGE_MODEL_DEFAULTS_TEXT, command=lambda:self.pop_up_change_model_defaults(settings_menu), width=SETTINGS_BUT_WIDTH-2)#
         change_model_default_Button.grid(pady=MENU_PADDING_4)
@@ -5182,6 +5183,9 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
                     self.lastest_version = self.online_data["current_version_linux"]
                 else:
                     self.lastest_version = self.online_data["current_version"]
+                
+                # Disabling application notification update temporarily
+                self.lastest_version = current_patch 
                     
                 if self.lastest_version == current_patch and not is_start_up:
                     self.app_update_status_Text_var.set('UVR Version Current')

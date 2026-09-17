@@ -886,7 +886,7 @@ elif OPERATING_SYSTEM=="Windows":
                               '• Application functionality for systems running Windows 7 or lower is not guaranteed.\n' +\
                               '• Application functionality for Intel Pentium & Celeron CPUs systems is not guaranteed.\n\n'
 
-LICENSE_TEXT = lambda a, p:f'Current Application Version: Ultimate Vocal Remover {a}\n' +\
+LICENSE_TEXT = lambda a, p:f'Current Application Version: RLD UVR-Opt {a}\n' +\
                f'Current Patch Version: {p}\n\n' +\
                'Copyright (c) 2022 Ultimate Vocal Remover\n\n' +\
                'UVR is free and open-source, but MIT licensed. Please credit us if you use our\n' +\
