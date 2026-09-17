@@ -336,6 +336,61 @@ class BenchmarkCLITests(unittest.TestCase):
         self.assertEqual(format_elapsed_time(125.5), "2m 5.50s")
         self.assertEqual(format_elapsed_time(3661.12), "61m 1.12s")
 
+    def test_cli_startup_isolation_does_not_load_heavy_backends(self):
+        """Verify that importing cli and building parser does not load heavy inference backends."""
+        import subprocess
+        import sys
+
+        code = (
+            "import sys; "
+            "import uvr_cli.cli; "
+            "parser = uvr_cli.cli.build_parser(); "
+            "loaded = set(sys.modules.keys()); "
+            "heavy = {'torch', 'separate', 'onnxruntime', 'librosa', 'scipy'} & loaded; "
+            "assert not heavy, f'Heavy modules unexpectedly loaded: {heavy}'; "
+            "print('ISOLATED_OK')"
+        )
+        res = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        self.assertIn("ISOLATED_OK", res.stdout)
+
+    def test_lazy_package_exports(self):
+        """Verify that uvr_cli exports attributes lazily and correctly."""
+        import uvr_cli
+
+        self.assertEqual(uvr_cli.__version__, "2.0.0")
+        self.assertTrue(callable(uvr_cli.resolve_model_file))
+        self.assertTrue(callable(uvr_cli.InferenceProgressBar))
+        self.assertTrue(callable(uvr_cli.collect_system_info))
+        self.assertTrue(callable(uvr_cli.BenchmarkEngine))
+        self.assertIn("BenchmarkEngine", dir(uvr_cli))
+        self.assertIn("execute_inference", uvr_cli.__all__)
+
+        with self.assertRaises(AttributeError):
+            _ = uvr_cli.non_existent_attribute_xyz
+
+    def test_inference_result_structure(self):
+        """Verify that InferenceResult unpacks as a 2-tuple while providing inference_time."""
+        from uvr_cli.runner import InferenceResult
+        from pathlib import Path
+
+        sample_paths = [Path("test_(Vocals).wav"), Path("test_(Instrumental).wav")]
+        res = InferenceResult(sample_paths, True, inference_time=3.42)
+
+        self.assertIsInstance(res, tuple)
+        self.assertEqual(len(res), 2)
+        stems, is_valid = res
+        self.assertEqual(stems, sample_paths)
+        self.assertTrue(is_valid)
+        self.assertEqual(res.inference_time, 3.42)
+        self.assertEqual(res.output_files, sample_paths)
+        self.assertTrue(res.is_valid)
+
 
 if __name__ == "__main__":
     unittest.main()
+

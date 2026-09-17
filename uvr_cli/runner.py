@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -10,7 +11,22 @@ import soundfile as sf
 
 from gui_data.constants import DEMUCS_ARCH_TYPE, MDX_ARCH_TYPE, VR_ARCH_TYPE
 from .model_resolver import HeadlessModelData
-from separate import SeperateDemucs, SeperateMDX, SeperateMDXC, SeperateVR
+
+
+class InferenceResult(tuple):
+    """Result tuple (output_files, is_valid) carrying pure inference timing metadata."""
+
+    def __new__(
+        cls,
+        output_files: List[Path],
+        is_valid: bool,
+        inference_time: float = 0.0,
+    ) -> InferenceResult:
+        inst = super().__new__(cls, (output_files, is_valid))
+        inst.output_files = output_files
+        inst.is_valid = is_valid
+        inst.inference_time = inference_time
+        return inst
 
 
 def get_audio_metadata(audio_path: str | Path) -> Dict[str, Any]:
@@ -176,21 +192,34 @@ def execute_inference(
 
     # Instantiate the corresponding UVR separator
     if model_data.process_method == VR_ARCH_TYPE:
+        from separate import SeperateVR
         separator = SeperateVR(model_data, process_data)
     elif model_data.process_method == MDX_ARCH_TYPE:
         if model_data.is_mdx_c:
+            from separate import SeperateMDXC
             separator = SeperateMDXC(model_data, process_data)
         else:
+            from separate import SeperateMDX
             separator = SeperateMDX(model_data, process_data)
     elif model_data.process_method == DEMUCS_ARCH_TYPE:
+        from separate import SeperateDemucs
         separator = SeperateDemucs(model_data, process_data)
     else:
         raise ValueError(f"Unsupported architecture: {model_data.process_method}")
 
-    # Run inference directly
+    # Synchronize CUDA device before timing pure inference
+    from .telemetry import sync_cuda
+    device_idx = int(model_data.device_name.split(":")[-1]) if ":" in getattr(model_data, "device_name", "") else 0
+    sync_cuda(device_idx)
+
+    # Run pure inference directly and measure actual separator execution time
+    inference_time = 0.0
+    t_start = time.perf_counter()
     try:
         separator.seperate()
     finally:
+        sync_cuda(device_idx)
+        inference_time = time.perf_counter() - t_start
         if hasattr(progress_callback, "close"):
             try:
                 progress_callback.close()
@@ -223,4 +252,4 @@ def execute_inference(
                 is_valid = False
                 break
 
-    return output_files, is_valid
+    return InferenceResult(output_files, is_valid, inference_time=inference_time)

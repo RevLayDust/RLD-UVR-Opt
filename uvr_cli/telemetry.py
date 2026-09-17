@@ -13,22 +13,60 @@ import time
 from typing import Any, Dict, List, Optional
 
 import psutil
-import torch
 
-try:
-    import onnxruntime as ort
-    ORT_AVAILABLE = True
-    ORT_VERSION = ort.__version__
-except Exception:
-    ORT_AVAILABLE = False
-    ORT_VERSION = "N/A"
+_torch = None
 
-try:
-    import pynvml
-    pynvml.nvmlInit()
-    NVML_AVAILABLE = True
-except Exception:
-    NVML_AVAILABLE = False
+
+def _get_torch():
+    global _torch
+    if _torch is None:
+        try:
+            import torch
+            _torch = torch
+        except Exception:
+            _torch = False
+    return _torch if _torch is not False else None
+
+
+_ort_info = None
+
+
+def _get_ort_info():
+    global _ort_info
+    if _ort_info is None:
+        try:
+            import onnxruntime as ort
+            _ort_info = (True, ort.__version__)
+        except Exception:
+            _ort_info = (False, "N/A")
+    return _ort_info
+
+
+_pynvml = None
+_nvml_init_attempted = False
+
+
+def _get_pynvml():
+    global _pynvml, _nvml_init_attempted
+    if not _nvml_init_attempted:
+        _nvml_init_attempted = True
+        try:
+            import pynvml
+            pynvml.nvmlInit()
+            _pynvml = pynvml
+        except Exception:
+            _pynvml = None
+    return _pynvml
+
+
+def __getattr__(name: str) -> Any:
+    if name == "NVML_AVAILABLE":
+        return _get_pynvml() is not None
+    if name == "ORT_AVAILABLE":
+        return _get_ort_info()[0]
+    if name == "ORT_VERSION":
+        return _get_ort_info()[1]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def get_cpu_name() -> str:
@@ -76,9 +114,10 @@ def get_cpu_name() -> str:
 
 def sync_cuda(device_index: int = 0) -> None:
     """Synchronize CUDA device if available."""
-    if torch.cuda.is_available():
+    torch_mod = _get_torch()
+    if torch_mod is not None and torch_mod.cuda.is_available():
         try:
-            torch.cuda.synchronize(device_index)
+            torch_mod.cuda.synchronize(device_index)
         except Exception:
             pass
 
@@ -89,23 +128,27 @@ def collect_system_info(device_index: int = 0) -> Dict[str, Any]:
     driver_version = None
     total_gpu_vram_mb = 0.0
 
-    if torch.cuda.is_available():
+    torch_mod = _get_torch()
+    nvml_mod = _get_pynvml()
+    _, ort_version = _get_ort_info()
+
+    if torch_mod is not None and torch_mod.cuda.is_available():
         try:
-            gpu_name = torch.cuda.get_device_name(device_index)
+            gpu_name = torch_mod.cuda.get_device_name(device_index)
         except Exception:
             pass
 
-    if NVML_AVAILABLE:
+    if nvml_mod is not None:
         try:
-            handle = pynvml.nvmlDeviceGetHandleByIndex(device_index)
+            handle = nvml_mod.nvmlDeviceGetHandleByIndex(device_index)
             if not gpu_name:
-                gpu_name = pynvml.nvmlDeviceGetName(handle)
+                gpu_name = nvml_mod.nvmlDeviceGetName(handle)
                 if isinstance(gpu_name, bytes):
                     gpu_name = gpu_name.decode("utf-8")
-            driver_version = pynvml.nvmlSystemGetDriverVersion()
+            driver_version = nvml_mod.nvmlSystemGetDriverVersion()
             if isinstance(driver_version, bytes):
                 driver_version = driver_version.decode("utf-8")
-            mem_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            mem_info = nvml_mod.nvmlDeviceGetMemoryInfo(handle)
             total_gpu_vram_mb = round(mem_info.total / (1024 * 1024), 2)
         except Exception:
             pass
@@ -122,10 +165,10 @@ def collect_system_info(device_index: int = 0) -> Dict[str, Any]:
         "gpu_name": gpu_name or "N/A",
         "total_gpu_vram_mb": total_gpu_vram_mb,
         "driver_version": driver_version or "N/A",
-        "cuda_available": torch.cuda.is_available(),
-        "cuda_version": torch.version.cuda or "N/A",
-        "torch_version": torch.__version__,
-        "onnxruntime_version": ORT_VERSION,
+        "cuda_available": torch_mod.cuda.is_available() if torch_mod is not None else False,
+        "cuda_version": (torch_mod.version.cuda or "N/A") if torch_mod is not None else "N/A",
+        "torch_version": torch_mod.__version__ if torch_mod is not None else "N/A",
+        "onnxruntime_version": ort_version,
         "python_version": platform.python_version(),
     }
 
@@ -141,9 +184,10 @@ class TelemetrySampler:
 
         self._process = psutil.Process(os.getpid())
         self._nvml_handle: Any = None
-        if NVML_AVAILABLE:
+        nvml_mod = _get_pynvml()
+        if nvml_mod is not None:
             try:
-                self._nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(self.device_index)
+                self._nvml_handle = nvml_mod.nvmlDeviceGetHandleByIndex(self.device_index)
             except Exception:
                 self._nvml_handle = None
 
@@ -167,22 +211,25 @@ class TelemetrySampler:
         except Exception:
             pass
 
-        if torch.cuda.is_available():
+        torch_mod = _get_torch()
+        if torch_mod is not None and torch_mod.cuda.is_available():
             try:
                 sync_cuda(self.device_index)
-                torch.cuda.reset_peak_memory_stats(self.device_index)
+                torch_mod.cuda.reset_peak_memory_stats(self.device_index)
                 self.baseline_torch_allocated_mb = round(
-                    torch.cuda.memory_allocated(self.device_index) / (1024 * 1024), 2
+                    torch_mod.cuda.memory_allocated(self.device_index) / (1024 * 1024), 2
                 )
             except Exception:
                 pass
 
         if self._nvml_handle:
-            try:
-                mem = pynvml.nvmlDeviceGetMemoryInfo(self._nvml_handle)
-                self.baseline_device_vram_mb = round(mem.used / (1024 * 1024), 2)
-            except Exception:
-                pass
+            nvml_mod = _get_pynvml()
+            if nvml_mod is not None:
+                try:
+                    mem = nvml_mod.nvmlDeviceGetMemoryInfo(self._nvml_handle)
+                    self.baseline_device_vram_mb = round(mem.used / (1024 * 1024), 2)
+                except Exception:
+                    pass
 
         self._stop_event.clear()
         self._thread = threading.Thread(target=self._sample_loop, daemon=True, name="TelemetrySampler")
@@ -202,17 +249,19 @@ class TelemetrySampler:
 
                 # NVML metrics
                 if self._nvml_handle:
-                    rates = pynvml.nvmlDeviceGetUtilizationRates(self._nvml_handle)
-                    self.gpu_util_samples.append(float(rates.gpu))
+                    nvml_mod = _get_pynvml()
+                    if nvml_mod is not None:
+                        rates = nvml_mod.nvmlDeviceGetUtilizationRates(self._nvml_handle)
+                        self.gpu_util_samples.append(float(rates.gpu))
 
-                    mem = pynvml.nvmlDeviceGetMemoryInfo(self._nvml_handle)
-                    self.device_vram_samples.append(mem.used / (1024 * 1024))
+                        mem = nvml_mod.nvmlDeviceGetMemoryInfo(self._nvml_handle)
+                        self.device_vram_samples.append(mem.used / (1024 * 1024))
 
-                    try:
-                        power_w = pynvml.nvmlDeviceGetPowerUsage(self._nvml_handle) / 1000.0
-                        self.power_samples.append(power_w)
-                    except Exception:
-                        pass
+                        try:
+                            power_w = nvml_mod.nvmlDeviceGetPowerUsage(self._nvml_handle) / 1000.0
+                            self.power_samples.append(power_w)
+                        except Exception:
+                            pass
             except Exception:
                 pass
 
@@ -228,13 +277,14 @@ class TelemetrySampler:
 
         torch_peak_alloc = 0.0
         torch_peak_reserved = 0.0
-        if torch.cuda.is_available():
+        torch_mod = _get_torch()
+        if torch_mod is not None and torch_mod.cuda.is_available():
             try:
                 torch_peak_alloc = round(
-                    torch.cuda.max_memory_allocated(self.device_index) / (1024 * 1024), 2
+                    torch_mod.cuda.max_memory_allocated(self.device_index) / (1024 * 1024), 2
                 )
                 torch_peak_reserved = round(
-                    torch.cuda.max_memory_reserved(self.device_index) / (1024 * 1024), 2
+                    torch_mod.cuda.max_memory_reserved(self.device_index) / (1024 * 1024), 2
                 )
             except Exception:
                 pass

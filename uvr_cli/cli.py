@@ -10,8 +10,6 @@ import wave
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
-
 from gui_data.constants import (
     MODEL_PRECISION_BF16,
     MODEL_PRECISION_DEFAULT,
@@ -19,14 +17,6 @@ from gui_data.constants import (
     MODEL_PRECISION_FP32,
     MODEL_PRECISION_OPTIONS,
 )
-from uvr_cli.engine import BenchmarkEngine
-from uvr_cli.model_resolver import (
-    build_headless_model_data,
-    list_available_models,
-    resolve_model_file,
-)
-from uvr_cli.progress import InferenceProgressBar
-from uvr_cli.runner import execute_inference, get_existing_outputs
 
 # Map shorthand precision arguments to UVR canonical precision strings
 PRECISION_MAP = {
@@ -65,6 +55,8 @@ def format_elapsed_time(seconds: float) -> str:
 
 def create_synthetic_audio(duration_sec: float = 2.0, samplerate: int = 44100) -> Path:
     """Create a temporary sine-wave test WAV file for smoke testing."""
+    import numpy as np
+
     temp_dir = Path(tempfile.mkdtemp(prefix="uvr_smoke_test_"))
     audio_path = temp_dir / "synthetic_test_input.wav"
 
@@ -86,6 +78,8 @@ def create_synthetic_audio(duration_sec: float = 2.0, samplerate: int = 44100) -
 
 def handle_list_models(args: argparse.Namespace) -> int:
     """List all installed UVR models."""
+    from uvr_cli.model_resolver import list_available_models
+
     models = list_available_models()
     if not models:
         print("No models found in models/ directories.")
@@ -104,6 +98,10 @@ def handle_list_models(args: argparse.Namespace) -> int:
 
 def handle_run(args: argparse.Namespace) -> int:
     """Perform CLI-only separation directly through UVR core."""
+    from uvr_cli.model_resolver import build_headless_model_data, resolve_model_file
+    from uvr_cli.progress import InferenceProgressBar
+    from uvr_cli.runner import execute_inference, get_existing_outputs
+
     model_path, arch = resolve_model_file(args.model)
     precision = normalize_cli_precision(args.precision)
 
@@ -160,7 +158,7 @@ def handle_run(args: argparse.Namespace) -> int:
         progress_bar.write_message(f"[UVR Core] {text}")
 
     t_start = time.perf_counter()
-    stems, is_valid = execute_inference(
+    result = execute_inference(
         model_data=model_data,
         audio_path=audio_path,
         export_dir=output_dir,
@@ -168,7 +166,11 @@ def handle_run(args: argparse.Namespace) -> int:
         console_callback=console_handler,
         overwrite=overwrite,
     )
-    t_elapsed = time.perf_counter() - t_start
+    fallback_elapsed = time.perf_counter() - t_start
+    stems, is_valid = result
+    t_elapsed = getattr(result, "inference_time", None)
+    if t_elapsed is None or t_elapsed <= 0.0:
+        t_elapsed = fallback_elapsed
 
     if is_valid and stems:
         print(f"\n[OK] Separation completed successfully! Generated {len(stems)} stem(s):")
@@ -184,6 +186,9 @@ def handle_run(args: argparse.Namespace) -> int:
 
 def handle_bench(args: argparse.Namespace) -> int:
     """Run real performance benchmark on UVR models."""
+    from uvr_cli.engine import BenchmarkEngine
+    from uvr_cli.model_resolver import build_headless_model_data, resolve_model_file
+
     model_path, arch = resolve_model_file(args.model)
     precision = normalize_cli_precision(args.precision)
 
@@ -214,6 +219,13 @@ def handle_bench(args: argparse.Namespace) -> int:
 
 def handle_smoke_test(args: argparse.Namespace) -> int:
     """Run end-to-end smoke test with synthetic audio."""
+    from uvr_cli.engine import BenchmarkEngine
+    from uvr_cli.model_resolver import (
+        build_headless_model_data,
+        list_available_models,
+        resolve_model_file,
+    )
+
     print("Generating 2.0-second synthetic stereo audio for smoke test...")
     audio_path = create_synthetic_audio(duration_sec=2.0)
 

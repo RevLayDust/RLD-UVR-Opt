@@ -117,17 +117,22 @@ class BenchmarkEngine:
                 sampler.start()
                 start_time = time.perf_counter()
 
-                stems, is_valid = execute_inference(
+                result = execute_inference(
                     model_data=self.model_data,
                     audio_path=self.audio_path,
                     export_dir=round_export_dir,
                 )
+                stems, is_valid = result
 
                 sync_cuda(self.device_index)
                 end_time = time.perf_counter()
                 telemetry = sampler.stop()
 
-                total_time = round(end_time - start_time, 4)
+                inference_time = getattr(result, "inference_time", None)
+                if inference_time is not None and inference_time > 0.0:
+                    total_time = round(inference_time, 4)
+                else:
+                    total_time = round(end_time - start_time, 4)
                 duration_sec = audio_info.get("duration_sec", 0.0)
                 speed_factor = round(duration_sec / total_time, 2) if total_time > 0 and duration_sec > 0 else 0.0
 
