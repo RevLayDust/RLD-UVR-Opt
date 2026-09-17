@@ -2,7 +2,7 @@
   "audio_info": {
     "channels": 2,
     "duration_sec": 48.3357,
-    "file_name": "edited_remixed_audio-2.wav",
+    "file_name": "sample.wav",
     "format": "WAV",
     "samplerate": 48000,
     "size_bytes": 9280542,
@@ -27,8 +27,8 @@
       "is_warmup": true,
       "iteration": 1,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 1,
       "speed_factor_rt": 8.18,
@@ -55,8 +55,8 @@
       "is_warmup": false,
       "iteration": 2,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 1,
       "speed_factor_rt": 12.26,
@@ -83,8 +83,8 @@
       "is_warmup": false,
       "iteration": 3,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 2,
       "speed_factor_rt": 12.32,
@@ -111,8 +111,8 @@
       "is_warmup": false,
       "iteration": 4,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 3,
       "speed_factor_rt": 12.34,
@@ -139,8 +139,8 @@
       "is_warmup": false,
       "iteration": 5,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 4,
       "speed_factor_rt": 12.46,
@@ -167,8 +167,8 @@
       "is_warmup": false,
       "iteration": 6,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 5,
       "speed_factor_rt": 12.52,
@@ -195,8 +195,8 @@
       "is_warmup": false,
       "iteration": 7,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 6,
       "speed_factor_rt": 12.43,
@@ -223,8 +223,8 @@
       "is_warmup": false,
       "iteration": 8,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 7,
       "speed_factor_rt": 12.5,
@@ -251,8 +251,8 @@
       "is_warmup": false,
       "iteration": 9,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 8,
       "speed_factor_rt": 12.51,
@@ -279,8 +279,8 @@
       "is_warmup": false,
       "iteration": 10,
       "output_stems": [
-        "edited_remixed_audio-2_(Instrumental).wav",
-        "edited_remixed_audio-2_(Vocals).wav"
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
       ],
       "round": 9,
       "speed_factor_rt": 12.54,
