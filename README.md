@@ -9,13 +9,13 @@
 [![Acceleration: CUDA & CPU](https://img.shields.io/badge/Acceleration-CUDA%20%7C%20CPU-76B900.svg?logo=nvidia&logoColor=white)](#-installation--prerequisites)
 
 **High-performance, memory-optimized distribution of Ultimate Vocal Remover GUI (UVR v5.6).**  
-Focused on accelerated **ONNX Runtime inference**, massive VRAM reduction, and instant CLI startup.
+Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, and faster CLI startup.
 
 <br/>
 <img
   src="./assets/demo_uvr-opt.webp"
   alt="RLD UVR-Opt Performance Demo"
-  width="900"
+  width="1200"
 />
 <br/>
 
@@ -43,7 +43,8 @@ Focused on accelerated **ONNX Runtime inference**, massive VRAM reduction, and i
 
 > **ONNX Model Priority**:  
  RLD UVR-Opt's core acceleration pipeline is built around the **MDX-Net family based on the ONNX runtime (`.onnx`)**.  
-> While legacy PyTorch checkpoint formats may load, non-`.onnx` models are currently **untested / experimental** and may not function properly. For maximum performance and stability, use `.onnx` models.
+ **Officially supported and tested**: `.onnx` models on the documented CUDA and CPU paths.
+ **Legacy/Experimental**: non-`.onnx` models may still load through existing UVR components, but they are currently untested and may not function as expected. 
 
 ---
 
@@ -93,25 +94,27 @@ If you prefer to configure your environment manually instead of running `install
    - **For NVIDIA GPU (CUDA 12.8)**:
      ```powershell
      uv pip install torch==2.11.0 torchvision==0.26.0 torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cu128
-     uv pip install onnxruntime-gpu==1.22.0
      ```
    - **For CPU Only Fallback**:
      ```powershell
      uv pip install torch==2.11.0 torchvision==0.26.0 torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cpu
-     uv pip install onnxruntime==1.22.0
      ```
 
 4. **Install Base Dependencies with uv pip**:
-   ```powershell
-   uv pip install -r .\install\requirements.txt
-   ```
+    - **For NVIDIA GPU**:
+      ```powershell
+      uv pip install -r .\install\requirements.txt
+      ```
+    - **For CPU Only**:
+      ```powershell
+      uv pip install -r .\install\requirements_cpu.txt
+      ```
 
 5. **Place External Media Binaries**:
    - Place `ffmpeg.exe` in the application root folder (or ensure it is in your system `PATH`).
    - Place `rubberband.exe` and `sndfile.dll` in the application root folder and `lib_v5/`.
 
 </details>
----
 
 ## 🚀 Usage / Quick Start
 
@@ -145,18 +148,17 @@ uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --overlap 0.50 --segme
 
 ## ✨ Key Features
 
-* **⚡ Accelerated ONNX Inference Loop**: Re-engineered tensor pipelines and pre-allocated contiguous buffers eliminate redundant Python-level copies during chunk processing.
-* **📉 Zero-Disk In-Memory FP16**: Dynamic model FP16 precision downcasting happens entirely in system RAM. UVR no longer writes or depends on persistent `.fp16.onnx` files on disk.
-* **🧹 Aggressive Memory Hygiene**: Immediate session eviction on model switch releases Python references and clears CUDA allocations (`torch.cuda.empty_cache()`), eliminating VRAM bloat across sequential jobs.
-* **⚡ Sub-Second UVR-CLI (PEP 562)**: Proxy-based lazy module loading cuts CLI startup latency from ~9 seconds down to **~0.20 seconds**.
-* **🎯 Truthful Benchmark Telemetry**: Pure model inference time is isolated from module loading and audio I/O for accurate, reproducible performance measurements.
-* **🔒 100% Bit-Exact Quality**: Mathematically identical STFT processing and model execution ensuring zero quality degradation compared to original UVR v5.6.
+* **⚡ Accelerated ONNX Inference**: Optimized tensor pipelines and buffer handling reduce unnecessary overhead during chunk processing.
+* **📟 In-Memory FP16 Conversion**: FP16 conversion is performed in memory without requiring persistent `.fp16.onnx` files.
+* **🧹 Memory & Session Management**: Improved session and allocation handling helps reduce unnecessary resource usage across runs.
+* **⚡ Faster CLI Startup**: Deferred loading of heavy runtime modules reduces startup work before inference is requested.
+* **🎯 Benchmark Telemetry**: Built-in measurements and metadata help compare inference performance across controlled test runs.
 
 ---
 
 ## 📊 Verified Benchmarks
 
-All metrics were gathered using the built-in isolated benchmark suite on identical test audio (**48.34s** stereo WAV, model: `UVR-MDX-NET-Inst_HQ_4.onnx`, Ultra Quality FP32).
+All metrics were gathered using the built-in isolated benchmark suite on identical test audio (**48.34s** stereo WAV, model: `UVR-MDX-NET-Inst_HQ_4.onnx`, Ultra Quality FP32). The results below reflect the documented test configuration and are not a universal performance guarantee.
 
 > **Test Hardware:** NVIDIA GeForce RTX 5060 Ti &nbsp;|&nbsp; AMD Ryzen 5 5600 6-Core Processor &nbsp;|&nbsp; 32 GB RAM &nbsp;|&nbsp; Windows 11
 
@@ -183,8 +185,10 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 - [x] Accelerated ONNX inference pipeline and buffer optimizations.
 - [x] In-memory `FP16` downcasting (e.g., `FP32` $\rightarrow$ `FP16`) and cache lifecycle management.
 - [ ] In-memory `BF16`/`FP8` (`E4M3`/`E5M2`) downcasting.
-- [ ] **Windows ML (via ONNX Runtime)**: Planned modern hardware acceleration backend for Windows as the official replacement for legacy DirectML.
-- [ ] **TensorRT Execution Provider (via ONNX Runtime)**: Ultra-high performance Execution Provider for NVIDIA GPUs. *(Note: **CUDA EP** will remain as the primary, most stable, and balanced execution provider).*
+- [ ] **Windows ML (via ONNX Runtime)**: Evaluate as a broader Windows execution-provider path for supported hardware.
+- [ ] **TensorRT Execution Provider (via ONNX Runtime)**: Evaluate as an optional NVIDIA acceleration path, with **CUDA EP** retained as the stable fallback.
+- [ ] Support for Newer Model Architectures.
+- [ ] UI/UX Overhaul.
 
 ---
 
