@@ -81,6 +81,7 @@ class ImagePath():
     def __init__(self, base_path):
         img_path = os.path.join(base_path, 'gui_data', 'img')
         credits_path = os.path.join(img_path, 'credits.png')
+        rld_credits_path = os.path.join(img_path, 'rld_credits.png')
         donate_path = os.path.join(img_path, 'donate.png')
         download_path = os.path.join(img_path, 'download.png')
         efile_path = os.path.join(img_path, 'File.png')
@@ -112,6 +113,7 @@ class ImagePath():
         self.clear_img = self.open_image(path=clear_img_path, size=(image_scale_2, image_scale_2))
         self.copy_img = self.open_image(path=copy_img_path, size=(image_scale_2, image_scale_2))
         self.credits_img = self.open_image(path=credits_path, size=determined_size["credits_img"])
+        self.rld_credits_img = self.open_image(path=rld_credits_path, size=determined_size["credits_img"])
 
     def open_image(self, path: str, size: tuple = None, keep_aspect: bool = True, rotate: int = 0) -> ImageTk.PhotoImage:
         """

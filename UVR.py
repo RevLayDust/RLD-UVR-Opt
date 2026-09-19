@@ -1335,6 +1335,7 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         self.donate_img = img.donate_img
         self.key_img = img.key_img
         self.credits_img = img.credits_img
+        self.rld_credits_img = img.rld_credits_img
         
         self.right_img = img.right_img
         self.left_img = img.left_img
@@ -3883,53 +3884,65 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         help_guide_opt.bind(right_click_button, lambda e:right_click_menu(e))
         credits_Frame = tk.Frame(tab1, highlightthicknes=50)
         credits_Frame.grid(row=0, column=0, padx=0, pady=0)
-        tk.Label(credits_Frame, image=self.credits_img).grid(row=1,column=0,padx=0,pady=MENU_PADDING_1)
 
-        section_title_Label(place=0,
-                            frame=credits_Frame,
-                            text="Core UVR Developers")
-        
-        credit_label(place=2,
-                     frame=credits_Frame,
-                     text="Anjok07\nAufr33",
-                     is_top=True)
-        
-        section_title_Label(place=3,
+        # Developers Section (Core UVR Developers & Optimization Developer)
+        dev_container = tk.Frame(credits_Frame)
+        dev_container.grid(row=0, column=0, padx=0, pady=(0, 4))
+
+        # Core UVR Developers column
+        core_dev_frame = tk.Frame(dev_container)
+        core_dev_frame.grid(row=0, column=0, padx=20)
+        tk.Label(core_dev_frame, text="Core UVR Developers", font=(MAIN_FONT_NAME, f"{FONT_SIZE_4}", "bold"), justify="center", fg="#F4F4F4").pack(pady=(0, MENU_PADDING_4))
+        tk.Label(core_dev_frame, image=self.credits_img).pack(pady=MENU_PADDING_1)
+        tk.Label(core_dev_frame, text="Anjok07\nAufr33", font=(MAIN_FONT_NAME, f"{FONT_SIZE_3}", "bold"), justify="center", fg="#13849f").pack(pady=1)
+
+        # Optimization Developer column
+        opt_dev_frame = tk.Frame(dev_container)
+        opt_dev_frame.grid(row=0, column=1, padx=20)
+        tk.Label(opt_dev_frame, text="Optimization & CLI", font=(MAIN_FONT_NAME, f"{FONT_SIZE_4}", "bold"), justify="center", fg="#F4F4F4").pack(pady=(0, MENU_PADDING_4))
+        rld_img_lbl = tk.Label(opt_dev_frame, image=self.rld_credits_img, cursor="hand2")
+        rld_img_lbl.pack(pady=MENU_PADDING_1)
+        rld_img_lbl.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://github.com/revlaydust/rld-uvr-opt"))
+        rld_text_lbl = tk.Label(opt_dev_frame, text="RevLayDust\n", font=(MAIN_FONT_NAME, f"{FONT_SIZE_3}", "bold"), justify="center", fg="#13849f", cursor="hand2")
+        rld_text_lbl.pack(pady=1)
+        rld_text_lbl.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://github.com/revlaydust/rld-uvr-opt"))
+
+        section_title_Label(place=1,
                             frame=credits_Frame,
                             text="Special Thanks")
         
-        credit_label(place=6,
+        credit_label(place=2,
                      frame=credits_Frame,
                      text="Tsurumeso",
                      message="Developed the original VR Architecture AI code.",
                      link="https://github.com/tsurumeso/vocal-remover",
                      is_link=True)
         
-        credit_label(place=8,
+        credit_label(place=4,
                      frame=credits_Frame,
                      text="Kuielab & Woosung Choi",
                      message="Developed the original MDX-Net AI code.",
                      link="https://github.com/kuielab",
                      is_link=True)
         
-        credit_label(place=10,
+        credit_label(place=6,
                      frame=credits_Frame,
                      text="Adefossez & Demucs",
                      message="Core developer of Facebook's Demucs Music Source Separation.",
                      link="https://github.com/facebookresearch/demucs",
                      is_link=True)
         
-        credit_label(place=12,
+        credit_label(place=8,
                      frame=credits_Frame,
                      text="Bas Curtiz",
                      message="Designed the official UVR logo, icon, banner, splash screen.")
         
-        credit_label(place=14,
+        credit_label(place=10,
                      frame=credits_Frame,
                      text="DilanBoskan",
                      message="Your contributions at the start of this project were essential to the success of UVR. Thank you!")
         
-        credit_label(place=16,
+        credit_label(place=12,
                      frame=credits_Frame,
                      text="Audio Separation and CC Karaoke & Friends Discord Communities",
                      message="Thank you for the support!")

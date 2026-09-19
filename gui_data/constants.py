@@ -888,7 +888,8 @@ elif OPERATING_SYSTEM=="Windows":
 
 LICENSE_TEXT = lambda a, p:f'Current Application Version: RLD UVR-Opt {a}\n' +\
                f'Current Patch Version: {p}\n\n' +\
-               'Copyright (c) 2022 Ultimate Vocal Remover\n\n' +\
+               'Copyright (c) 2022 Ultimate Vocal Remover\n' +\
+               'Copyright (c) 2026 RevLayDust\n\n' +\
                'UVR is free and open-source, but MIT licensed. Please credit us if you use our\n' +\
                f'models or code for projects unrelated to UVR.\n\n{LICENSE_OS_SPECIFIC_TEXT}' +\
                'This bundle contains the UVR interface, Python, PyTorch, and other\n' +\
@@ -905,6 +906,8 @@ LICENSE_TEXT = lambda a, p:f'Current Application Version: RLD UVR-Opt {a}\n' +\
                'and we make no representations or warranties regarding your use of\n' +\
                'the linked websites.\n\n' +\
                'This application is MIT Licensed\n\n' +\
+               'Copyright (c) 2022 Ultimate Vocal Remover\n' +\
+               'Copyright (c) 2026 RevLayDust\n\n' +\
                'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +\
                'of this software and associated documentation files (the "Software"), to deal\n' +\
                'in the Software without restriction, including without limitation the rights\n' +\
