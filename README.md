@@ -65,6 +65,19 @@ Simply double-click `install\install_packages.bat` in File Explorer, or run in t
 .\install\install_packages.bat
 ```
 
+#### Step 3: Run the GUI
+If you installed the **GPU version**, you must follow these steps:
+
+1. Open UVR using `run_uvr.bat` or `python UVR.py`.
+2. Go to **Main Settings** (to the left of the **Start Processing** button with the wrench icon) → **Additional Settings** → Change **GPU Device** from the default setting to your GPU using the dropdown menu.
+3. Go back to the main menu, then enable **GPU Conversions**.
+4. Re-open UVR.
+5. Done! You can now start using it!
+
+If you installed the **CPU version**, simply launch UVR using `run_uvr.bat`, `python UVR.py`, or by double-clicking `run_uvr.bat` in File Explorer.
+
+> If you encounter any specific issues, feel free to [open an issue](https://github.com/revlaydust/rld-uvr-opt/issues)! 
+
 #### What the One-Click Installer automates for you:
 * 🔍 **Hardware & Driver Detection**: Automatically identifies your GPU architecture (NVIDIA RTX 20/30/40/50 series) and selects PyTorch CUDA 12.8 or optimized CPU fallback.
 * 🐍 **Python Environment Management**: Automatically bootstraps `uv` and provisions an isolated Python 3.11 virtual environment (`venv`).
@@ -180,7 +193,7 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 ---
 
-## 🗺️ Roadmap
+## 🧭 Roadmap
 
 - [x] Accelerated ONNX inference pipeline and buffer optimizations.
 - [x] In-memory `FP16` downcasting (e.g., `FP32` $\rightarrow$ `FP16`) and cache lifecycle management.
