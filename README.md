@@ -35,7 +35,7 @@ Focused on accelerated **ONNX Runtime inference**, massive VRAM reduction, and i
 
 * **Python**: **Python 3.11 or higher (64-bit)** is required.
 * **Compute Device**:
-  * **NVIDIA GPU (CUDA)**: NVIDIA GeForce RTX-20 Series with 6GB VRAM is the minimum requirement for GPU conversions. (**8GB+ VRAM recommended for optimal performance**).
+  * **NVIDIA GPU (CUDA)**: NVIDIA GeForce RTX 20 Series GPU or higher with at least 6GB VRAM is the minimum requirement for GPU conversions (**8GB+ VRAM recommended for optimal performance**).
   * **CPU**: Multi-core modern 64-bit x86 processor (fully supported via multi-threaded CPU inference).
   * *(Note: Hardware focus is strictly on **CUDA** and **CPU**).*
 
