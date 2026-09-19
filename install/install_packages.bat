@@ -24,6 +24,9 @@ set "LOG_FILE=%LOG_DIR%\install_%DATE:/=-%_%TIME::=-%.log"
 set "LOG_FILE=%LOG_FILE: =0%"
 set "CPU_REQ_FILE=%LOG_DIR%\requirements_cpu.generated.txt"
 set "UV_LINK_MODE=copy"
+set "ROOT_DIR=.."
+set "FFMPEG_URL=https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+set "RUBBERBAND_URL=https://breakfastquay.com/files/releases/rubberband-3.1.2-gpl-executable-windows.zip"
 
 set "TORCH_VERSION=2.11.0"
 set "TORCHVISION_VERSION=0.26.0"
@@ -62,6 +65,10 @@ if errorlevel 1 exit /b 1
 
 call :install_base_deps
 if errorlevel 1 exit /b 1
+
+call :ensure_external_tools
+if errorlevel 1 exit /b 1
+
 call :smoke_test
 if errorlevel 1 exit /b 1
 call :done
@@ -343,6 +350,145 @@ if errorlevel 1 (
 
 uv pip install --python "%VENV_PYTHON%" onnxruntime==1.22.0
 if errorlevel 1 call :warn "Failed to install ONNX Runtime CPU. PyTorch models can still run, but ONNX models may fail."
+exit /b 0
+
+:ensure_external_tools
+echo.
+echo ============================================================
+echo  Checking External Media Binaries (FFmpeg ^& Rubber Band)
+echo ============================================================
+call :log "Checking external media binaries"
+
+call :ensure_ffmpeg
+call :ensure_rubberband
+echo.
+exit /b 0
+
+:ensure_ffmpeg
+set "HAS_FFMPEG=0"
+set "DETECTED_FFMPEG="
+
+if exist "%ROOT_DIR%\ffmpeg.exe" (
+    set "HAS_FFMPEG=1"
+    set "DETECTED_FFMPEG=%ROOT_DIR%\ffmpeg.exe"
+    echo [OK] FFmpeg found in root directory: !DETECTED_FFMPEG!
+    call :log "FFmpeg found in root: !DETECTED_FFMPEG!"
+    exit /b 0
+)
+
+where ffmpeg >nul 2>&1
+if not errorlevel 1 (
+    for /f "delims=" %%A in ('where ffmpeg 2^>nul') do (
+        set "HAS_FFMPEG=1"
+        set "DETECTED_FFMPEG=%%A"
+        goto :ffmpeg_path_found
+    )
+)
+
+:ffmpeg_path_found
+if "!HAS_FFMPEG!"=="1" (
+    echo [OK] FFmpeg detected in system PATH: !DETECTED_FFMPEG!
+    call :log "FFmpeg detected in system PATH: !DETECTED_FFMPEG!"
+    exit /b 0
+)
+
+echo FFmpeg was not detected in system PATH or root folder.
+echo Downloading portable FFmpeg to application root...
+call :log "Downloading portable FFmpeg from %FFMPEG_URL%"
+set "FFMPEG_ZIP=%TEMP%\uvr_ffmpeg_%RANDOM%.zip"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; if (Get-Command curl.exe -ErrorAction SilentlyContinue) { curl.exe -f -L --progress-bar -o '%FFMPEG_ZIP%' '%FFMPEG_URL%' } else { (New-Object System.Net.WebClient).DownloadFile('%FFMPEG_URL%', '%FFMPEG_ZIP%') }"
+if errorlevel 1 (
+    if exist "%FFMPEG_ZIP%" del "%FFMPEG_ZIP%" >nul 2>&1
+    call :warn "Failed to download portable FFmpeg. Non-WAV audio conversion may be unavailable."
+    exit /b 0
+)
+
+echo Extracting ffmpeg.exe to %ROOT_DIR%...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; $archive = [System.IO.Compression.ZipFile]::OpenRead('%FFMPEG_ZIP%'); foreach ($entry in $archive.Entries) { if ($entry.Name -eq 'ffmpeg.exe' -or $entry.Name -eq 'ffprobe.exe') { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path '%ROOT_DIR%' $entry.Name), $true) } }; $archive.Dispose()"
+if exist "%FFMPEG_ZIP%" del "%FFMPEG_ZIP%" >nul 2>&1
+
+if exist "%ROOT_DIR%\ffmpeg.exe" (
+    echo [OK] FFmpeg portable installed successfully: %ROOT_DIR%\ffmpeg.exe
+    call :log "FFmpeg portable installed to %ROOT_DIR%\ffmpeg.exe"
+) else (
+    call :warn "FFmpeg archive downloaded, but ffmpeg.exe could not be extracted."
+)
+exit /b 0
+
+:ensure_rubberband
+set "HAS_RB=0"
+set "DETECTED_RB="
+
+if exist "%ROOT_DIR%\rubberband.exe" (
+    set "HAS_RB=1"
+    set "DETECTED_RB=%ROOT_DIR%\rubberband.exe"
+    echo [OK] rubberband-cli found in root directory: !DETECTED_RB!
+    call :log "rubberband-cli found in root: !DETECTED_RB!"
+    if exist "%ROOT_DIR%\lib_v5" if not exist "%ROOT_DIR%\lib_v5\rubberband.exe" (
+        copy /y "%ROOT_DIR%\rubberband.exe" "%ROOT_DIR%\lib_v5\rubberband.exe" >nul 2>&1
+        if exist "%ROOT_DIR%\sndfile.dll" copy /y "%ROOT_DIR%\sndfile.dll" "%ROOT_DIR%\lib_v5\sndfile.dll" >nul 2>&1
+    )
+    exit /b 0
+)
+
+if exist "%ROOT_DIR%\lib_v5\rubberband.exe" (
+    set "HAS_RB=1"
+    set "DETECTED_RB=%ROOT_DIR%\lib_v5\rubberband.exe"
+    echo [OK] rubberband-cli found in lib_v5 directory: !DETECTED_RB!
+    call :log "rubberband-cli found in lib_v5: !DETECTED_RB!"
+    if not exist "%ROOT_DIR%\rubberband.exe" (
+        copy /y "%ROOT_DIR%\lib_v5\rubberband.exe" "%ROOT_DIR%\rubberband.exe" >nul 2>&1
+        if exist "%ROOT_DIR%\lib_v5\sndfile.dll" copy /y "%ROOT_DIR%\lib_v5\sndfile.dll" "%ROOT_DIR%\sndfile.dll" >nul 2>&1
+    )
+    exit /b 0
+)
+
+where rubberband >nul 2>&1
+if not errorlevel 1 (
+    for /f "delims=" %%A in ('where rubberband 2^>nul') do (
+        set "HAS_RB=1"
+        set "DETECTED_RB=%%A"
+        goto :rb_path_found
+    )
+)
+
+where rubberband-cli >nul 2>&1
+if not errorlevel 1 (
+    for /f "delims=" %%A in ('where rubberband-cli 2^>nul') do (
+        set "HAS_RB=1"
+        set "DETECTED_RB=%%A"
+        goto :rb_path_found
+    )
+)
+
+:rb_path_found
+if "!HAS_RB!"=="1" (
+    echo [OK] rubberband-cli detected in system PATH: !DETECTED_RB!
+    call :log "rubberband-cli detected in system PATH: !DETECTED_RB!"
+    exit /b 0
+)
+
+echo rubberband-cli was not detected in system PATH or root folder.
+echo Downloading portable Rubber Band to application root...
+call :log "Downloading portable Rubber Band from %RUBBERBAND_URL%"
+set "RB_ZIP=%TEMP%\uvr_rubberband_%RANDOM%.zip"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; if (Get-Command curl.exe -ErrorAction SilentlyContinue) { curl.exe -f -L --progress-bar -o '%RB_ZIP%' '%RUBBERBAND_URL%' } else { (New-Object System.Net.WebClient).DownloadFile('%RUBBERBAND_URL%', '%RB_ZIP%') }"
+if errorlevel 1 (
+    if exist "%RB_ZIP%" del "%RB_ZIP%" >nul 2>&1
+    call :warn "Failed to download portable Rubber Band. Time-stretch and pitch-shift tools will be unavailable."
+    exit /b 0
+)
+
+echo Extracting rubberband.exe and sndfile.dll to %ROOT_DIR%...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; $archive = [System.IO.Compression.ZipFile]::OpenRead('%RB_ZIP%'); foreach ($entry in $archive.Entries) { if ($entry.Name -eq 'rubberband.exe' -or $entry.Name -eq 'sndfile.dll') { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path '%ROOT_DIR%' $entry.Name), $true); if (Test-Path '%ROOT_DIR%\lib_v5') { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path '%ROOT_DIR%\lib_v5' $entry.Name), $true) } } }; $archive.Dispose()"
+if exist "%RB_ZIP%" del "%RB_ZIP%" >nul 2>&1
+
+if exist "%ROOT_DIR%\rubberband.exe" (
+    echo [OK] rubberband-cli portable installed successfully: %ROOT_DIR%\rubberband.exe
+    call :log "rubberband-cli portable installed to %ROOT_DIR%\rubberband.exe"
+) else (
+    call :warn "Rubber Band archive downloaded, but rubberband.exe could not be extracted."
+)
 exit /b 0
 
 :smoke_test
