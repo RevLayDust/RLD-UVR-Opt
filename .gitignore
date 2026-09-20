@@ -17,5 +17,6 @@ output/*
 uvr_run.log
 data.pkl
 error.log
-benchmark_results/temp/
 CONTRIBUTING.md
+rubberband.exe
+ffmpeg.exe

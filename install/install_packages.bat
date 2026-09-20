@@ -424,22 +424,6 @@ if exist "%ROOT_DIR%\rubberband.exe" (
     set "DETECTED_RB=%ROOT_DIR%\rubberband.exe"
     echo [OK] rubberband-cli found in root directory: !DETECTED_RB!
     call :log "rubberband-cli found in root: !DETECTED_RB!"
-    if exist "%ROOT_DIR%\lib_v5" if not exist "%ROOT_DIR%\lib_v5\rubberband.exe" (
-        copy /y "%ROOT_DIR%\rubberband.exe" "%ROOT_DIR%\lib_v5\rubberband.exe" >nul 2>&1
-        if exist "%ROOT_DIR%\sndfile.dll" copy /y "%ROOT_DIR%\sndfile.dll" "%ROOT_DIR%\lib_v5\sndfile.dll" >nul 2>&1
-    )
-    exit /b 0
-)
-
-if exist "%ROOT_DIR%\lib_v5\rubberband.exe" (
-    set "HAS_RB=1"
-    set "DETECTED_RB=%ROOT_DIR%\lib_v5\rubberband.exe"
-    echo [OK] rubberband-cli found in lib_v5 directory: !DETECTED_RB!
-    call :log "rubberband-cli found in lib_v5: !DETECTED_RB!"
-    if not exist "%ROOT_DIR%\rubberband.exe" (
-        copy /y "%ROOT_DIR%\lib_v5\rubberband.exe" "%ROOT_DIR%\rubberband.exe" >nul 2>&1
-        if exist "%ROOT_DIR%\lib_v5\sndfile.dll" copy /y "%ROOT_DIR%\lib_v5\sndfile.dll" "%ROOT_DIR%\sndfile.dll" >nul 2>&1
-    )
     exit /b 0
 )
 
@@ -480,7 +464,7 @@ if errorlevel 1 (
 )
 
 echo Extracting rubberband.exe and sndfile.dll to %ROOT_DIR%...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; $archive = [System.IO.Compression.ZipFile]::OpenRead('%RB_ZIP%'); foreach ($entry in $archive.Entries) { if ($entry.Name -eq 'rubberband.exe' -or $entry.Name -eq 'sndfile.dll') { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path '%ROOT_DIR%' $entry.Name), $true); if (Test-Path '%ROOT_DIR%\lib_v5') { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path '%ROOT_DIR%\lib_v5' $entry.Name), $true) } } }; $archive.Dispose()"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; $archive = [System.IO.Compression.ZipFile]::OpenRead('%RB_ZIP%'); foreach ($entry in $archive.Entries) { if ($entry.Name -eq 'rubberband.exe' -or $entry.Name -eq 'sndfile.dll') { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path '%ROOT_DIR%' $entry.Name), $true) } }; $archive.Dispose()"
 if exist "%RB_ZIP%" del "%RB_ZIP%" >nul 2>&1
 
 if exist "%ROOT_DIR%\rubberband.exe" (
