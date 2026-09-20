@@ -13,7 +13,7 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 
 <br/>
 <img
-  src="https://raw.githubusercontent.com/RevLayDust/rld-uvr-opt/main/assets/demo_uvr-opt.webp"
+  src="./assets/demo_uvr-opt.webp"
   alt="RLD UVR-Opt Performance Demo"
   width="1200"
 />
