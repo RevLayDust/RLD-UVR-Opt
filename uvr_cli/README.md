@@ -52,7 +52,27 @@ venv\Scripts\python.exe -m uvr_cli run `
     --device cuda:0 `
     --output-dir "separated_outputs"
 ```
-Supported precisions: `fp32`, `fp16`, `bf16`.
+
+#### Parameters (`uvr_cli run`)
+
+| Option | Flag | Type | Default | Description |
+| :--- | :---: | :---: | :---: | :--- |
+| `--audio` | `-a` | `Path` | *Required* | Path to the input audio file to separate (WAV, FLAC, MP3, etc.). |
+| `--model` | `-m` | `String` | *Required* | Model filename (e.g. `UVR-MDX-NET-Inst_HQ_4.onnx`), friendly name, or absolute path. |
+| `--precision` | `-p` | `Choice` | `fp16` | Inference precision policy: `fp16` (default, in-memory downcast), `fp32`, or `bf16` (experimental). |
+| `--device` | `-d` | `String` | `cuda:0` | Target execution device (`cuda:0`, `cuda:1`, or `cpu`). |
+| `--output-dir` | `-o` | `Path` | `separated_outputs` | Output directory where separated stem files will be saved. |
+| `--segment-size` | | `Integer` | *Model Default* | MDX chunk size in samples (e.g. `256`, `3000`, `4000`, `6000`). |
+| `--overlap` | | `Float` | *Model Default* | Overlap ratio between adjacent chunks (e.g. `0.25`, `0.50`, `0.75`). |
+| `--batch-size` | | `Integer` | `1` | Number of chunks processed concurrently per forward pass. |
+| `--overwrite` | `-y` | `Flag` | `False` | Automatically overwrite existing stem files in `--output-dir` without interactive prompt. |
+
+Supported precisions: `fp32`, `fp16` (default), and `bf16` (experimental).
+
+> [!WARNING]
+> **BF16 Precision is Experimental**:  
+> `bf16` is currently unstable and not recommended for general use.  
+> In-memory BF16 downcasting is not yet fully stable (planned on the roadmap). If you still want to use the `bf16` option, you **must** manually downcast the model to BF16 beforehand. Even then, it may not work immediately on all hardware or Execution Providers and may fall back to another precision, such as `fp32` or `fp16`. For optimal stability and performance, **`fp16`** or **`fp32`** is strongly recommended.
 
 If destination stem files already exist in `--output-dir`, the CLI will prompt:
 `Overwrite? [Y/N]: `
@@ -76,6 +96,21 @@ venv\Scripts\python.exe -m uvr_cli bench `
     --export-dir "benchmark_results"
 ```
 
+#### Parameters (`uvr_cli bench`)
+
+| Option | Flag | Type | Default | Description |
+| :--- | :---: | :---: | :---: | :--- |
+| `--audio` | `-a` | `Path` | *Required* | Path to input audio file for benchmarking (uncompressed WAV recommended). |
+| `--model` | `-m` | `String` | *Required* | Model filename, friendly name, or absolute path to benchmark. |
+| `--precision` | `-p` | `Choice` | `fp16` | Inference precision policy: `fp16`, `fp32`, or `bf16` (experimental). |
+| `--device` | `-d` | `String` | `cuda:0` | Target execution device (`cuda:0`, `cpu`). |
+| `--rounds` | `-r` | `Integer` | `3` | Number of measured benchmark rounds to run after warmup. |
+| `--warmup` | `-w` | `Integer` | `1` | Number of untimed warmup rounds to prime model sessions, ONNX memory, and CUDA allocations. |
+| `--export-dir` | `-e` | `Path` | `benchmark_results` | Directory where JSON telemetry reports and `summary.csv` will be saved. |
+| `--segment-size` | | `Integer` | *Model Default* | Custom MDX chunk size in samples to evaluate segment performance. |
+| `--overlap` | | `Float` | *Model Default* | Custom overlap ratio (e.g. `0.25`, `0.50`, `0.75`) to evaluate throughput vs quality trade-offs. |
+| `--batch-size` | | `Integer` | `1` | Number of chunks evaluated per forward pass. |
+
 ### 4. Automated Smoke Test
 Run an end-to-end verification test using an automatically generated synthetic audio clip:
 ```powershell
@@ -95,7 +130,7 @@ Columns included in the CSV summary:
 - `model_name`: File name of the model
 - `model_hash`: MD5 hash of the model
 - `backend`: UVR backend architecture (MDX-Net, VR Arc, Demucs)
-- `precision`: Effective precision policy (FP32, FP16, BF16, etc.)
+- `precision`: Effective precision policy (FP32, FP16, or BF16)
 - `audio_file`: Name of the benchmarked audio file
 - `audio_duration_sec`: Duration of the audio file in seconds
 - `round`: Measurement round index or `warmup_1`

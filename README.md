@@ -13,7 +13,7 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 
 <br/>
 <img
-  src="./assets/demo_uvr-opt.webp"
+  src="https://raw.githubusercontent.com/RevLayDust/rld-uvr-opt/main/assets/demo_uvr-opt.webp"
   alt="RLD UVR-Opt Performance Demo"
   width="1200"
 />
@@ -30,7 +30,7 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 ## 📦 Installation & Prerequisites
 
 ### 1. System Requirements & Platform Support
-
+> [!IMPORTANT]
 > **Platform Support**: RLD UVR-Opt is actively tested and optimized exclusively for **Windows 10 / 11 (64-bit)**.
 
 * **Python**: **Python 3.11 or higher (64-bit)** is required.
@@ -42,8 +42,8 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 ### 2. Model & Architecture Scope
 
 > **ONNX Model Priority**:  
- RLD UVR-Opt's core acceleration pipeline is built around the **MDX-Net family based on the ONNX runtime (`.onnx`)**.  
- **Officially supported and tested**: `.onnx` models on the documented CUDA and CPU paths.
+ RLD UVR-Opt's core acceleration pipeline is built around ONNX Runtime for `.onnx` models.  
+ **Officially supported and tested**: `.onnx` models from the **MDX-Net family** on the documented CUDA and CPU paths.
  **Legacy/Experimental**: non-`.onnx` models may still load through existing UVR components, but they are currently untested and may not function as expected. 
 
 ---
@@ -125,7 +125,7 @@ If you prefer to configure your environment manually instead of running `install
 
 5. **Place External Media Binaries**:
    - Place `ffmpeg.exe` in the application root folder (or ensure it is in your system `PATH`).
-   - Place `rubberband.exe` and `sndfile.dll` in the application root folder and `lib_v5/`.
+   - Place `rubberband.exe` and `sndfile.dll` in the application root folder (or ensure it is in your system `PATH`).
 
 </details>
 
@@ -179,7 +179,7 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 | Configuration | Metric | UVR v5.6 (Legacy) | RLD UVR-Opt | Improvement |
 | :--- | :--- | :---: | :---: | :---: |
-| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM**<br>PyTorch VRAM Alloc | 13.52 s<br>3.58x Realtime<br>8,210 MB<br>6,360 MB | **3.85 s**<br>**12.54x Realtime**<br>**3,941 MB**<br>**177.5 MB** | **~3.5x Faster**<br>+250% Throughput<br>**-52.0% VRAM Usage (4.2 GB Saved)**<br>-97.2% PyTorch Memory Bloat |
+| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM**<br>PyTorch VRAM Alloc | 13.52 s<br>3.58x Realtime<br>8,210 MB<br>6,360 MB | **3.85 s**<br>**12.54x Realtime**<br>**3,941 MB**<br>**177.5 MB** | **~3.5x Faster**<br>+250% Throughput<br>**-52.0% VRAM Usage (4.2 GB Saved)**<br>-97.2% PyTorch VRAM Allocation |
 | **Overlap 0.50**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM** | 7.99 s<br>6.05x Realtime<br>8,214 MB | **2.06 s**<br>**23.44x Realtime**<br>**3,893 MB** | **~3.87x Faster**<br>+287% Throughput<br>**-52.6% VRAM Usage (4.3 GB Saved)** |
 
 ### 2. CPU Inference Performance
@@ -197,7 +197,7 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 - [x] Accelerated ONNX inference pipeline and buffer optimizations.
 - [x] In-memory `FP16` downcasting (e.g., `FP32` $\rightarrow$ `FP16`) and cache lifecycle management.
-- [ ] In-memory `BF16`/`FP8` (`E4M3`/`E5M2`) downcasting.
+- [ ] In-memory `BF16`/`FP8 E4M3FN` downcasting.
 - [ ] **Windows ML (via ONNX Runtime)**: Evaluate as a broader Windows execution-provider path for supported hardware.
 - [ ] **TensorRT Execution Provider (via ONNX Runtime)**: Evaluate as an optional NVIDIA acceleration path, with **CUDA EP** retained as the stable fallback.
 - [ ] Support for Newer Model Architectures.
