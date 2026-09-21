@@ -14,7 +14,7 @@ if errorlevel 1 (
 )
 set "INSTALLER_FILE="
 
-set "APP_NAME=Ultimate Vocal Remover"
+set "APP_NAME=RLD UVR-Opt"
 set "PYTHON_VERSION=3.11.9"
 set "VENV_DIR=..\venv"
 set "VENV_PYTHON=%VENV_DIR%\Scripts\python.exe"
@@ -89,7 +89,7 @@ exit /b 0
 
 :check_windows
 if /i not "%OS%"=="Windows_NT" (
-    call :warn "This installer is designed for Windows. Use install_packages.sh on other operating systems."
+    call :warn "This installer is designed for Windows. Not compatible with Linux and Mac OS for now."
 )
 exit /b 0
 
@@ -334,6 +334,7 @@ if errorlevel 1 (
 )
 
 echo Installing ONNX Runtime GPU compatibility package...
+uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" onnxruntime-gpu==1.22.0
 if errorlevel 1 call :warn "Failed to install onnxruntime-gpu. UVR can still use PyTorch CUDA, but ONNX models may fall back or fail."
 exit /b 0
@@ -348,6 +349,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
+uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime-gpu >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" onnxruntime==1.22.0
 if errorlevel 1 call :warn "Failed to install ONNX Runtime CPU. PyTorch models can still run, but ONNX models may fail."
 exit /b 0
