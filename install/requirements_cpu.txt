@@ -19,7 +19,6 @@ cryptography==3.4.6
 cycler==0.12.1
 cython==3.2.6
 decorator==5.3.1
-diffq==0.2.4
 einops==0.6.0
 filelock==3.29.0
 flatbuffers==25.12.19

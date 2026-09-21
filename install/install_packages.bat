@@ -282,9 +282,14 @@ if /i "%INSTALL_MODE%"=="CPU" (
     set "INSTALL_REQ=%CPU_REQ_FILE%"
 )
 
+if exist "%~dp0wheels\diffq-0.2.4-cp311-cp311-win_amd64.whl" (
+    call :log "Pre-installing local binary wheel for diffq"
+    uv pip install --python "%VENV_PYTHON%" --no-deps "%~dp0wheels\diffq-0.2.4-cp311-cp311-win_amd64.whl" >nul 2>&1
+)
+
 echo Installing base dependencies...
 call :log "Installing requirements from !INSTALL_REQ!"
-uv pip install --python "%VENV_PYTHON%" -r "!INSTALL_REQ!"
+uv pip install --python "%VENV_PYTHON%" --find-links "%~dp0wheels" -r "!INSTALL_REQ!"
 set "BASE_INSTALL_EXIT=!ERRORLEVEL!"
 if /i "%INSTALL_MODE%"=="CPU" if exist "%CPU_REQ_FILE%" del "%CPU_REQ_FILE%" >nul 2>&1
 if not "!BASE_INSTALL_EXIT!"=="0" (
