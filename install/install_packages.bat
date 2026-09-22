@@ -66,6 +66,8 @@ if errorlevel 1 exit /b 1
 call :install_base_deps
 if errorlevel 1 exit /b 1
 
+call :ensure_vcredist
+
 call :ensure_external_tools
 if errorlevel 1 exit /b 1
 
@@ -357,6 +359,74 @@ if errorlevel 1 (
 uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime-gpu >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" onnxruntime==1.22.0
 if errorlevel 1 call :warn "Failed to install ONNX Runtime CPU. PyTorch models can still run, but ONNX models may fail."
+exit /b 0
+
+:ensure_vcredist
+echo.
+echo ============================================================
+echo  Checking Visual C++ Redistributable 2015-2022 (x64)
+echo ============================================================
+call :log "Checking Visual C++ Redistributable"
+
+set "VCREDIST_OK=0"
+
+rem -- Check installed VC++ 2015-2022 x64 via registry (version must be >= 14.40)
+for /f "tokens=* usebackq" %%V in (`reg query "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64" /v Version 2^>nul`) do (
+    set "VCREDIST_REG_LINE=%%V"
+)
+if defined VCREDIST_REG_LINE (
+    for /f "tokens=3" %%A in ('echo !VCREDIST_REG_LINE!') do set "VCREDIST_VER=%%A"
+    rem VCREDIST_VER looks like v14.40.33810 or v14.38 -- check major minor
+    for /f "tokens=1,2 delims=." %%M in ('echo !VCREDIST_VER:v=!') do (
+        set "VCREDIST_MAJOR=%%M"
+        set "VCREDIST_MINOR=%%N"
+    )
+    if "!VCREDIST_MAJOR!"=="14" (
+        if !VCREDIST_MINOR! GEQ 40 set "VCREDIST_OK=1"
+    )
+)
+
+if "!VCREDIST_OK!"=="0" (
+    rem -- Also check via Programs registry key (fallback for older installs)
+    for /f "usebackq" %%K in (`reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" /f "Microsoft Visual C++ 2015-2022 Redistributable (x64)" /s /k 2^>nul ^| findstr /i "Uninstall\\{" 2^>nul`) do (
+        set "VCREDIST_OK=1"
+    )
+)
+
+if "!VCREDIST_OK!"=="1" (
+    echo [OK] Visual C++ Redistributable 2015-2022 x64 is already installed.
+    call :log "VC++ Redistributable already present."
+    exit /b 0
+)
+
+echo Visual C++ Redistributable 2015-2022 x64 was not found.
+echo Downloading and installing the latest VC++ Redistributable...
+call :log "VC++ Redistributable missing. Downloading from Microsoft..."
+
+set "VCREDIST_URL=https://aka.ms/vs/17/release/vc_redist.x64.exe"
+set "VCREDIST_EXE=%TEMP%\vc_redist_%RANDOM%.exe"
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; if (Get-Command curl.exe -ErrorAction SilentlyContinue) { curl.exe -f -L --progress-bar -o '%VCREDIST_EXE%' '%VCREDIST_URL%' } else { (New-Object System.Net.WebClient).DownloadFile('%VCREDIST_URL%', '%VCREDIST_EXE%') }"
+if errorlevel 1 (
+    if exist "%VCREDIST_EXE%" del "%VCREDIST_EXE%" >nul 2>&1
+    call :warn "Failed to download VC++ Redistributable. Some C-extension modules may not load."
+    exit /b 0
+)
+
+echo Installing VC++ Redistributable silently (this may take a moment)...
+"%VCREDIST_EXE%" /install /quiet /norestart
+set "VCREDIST_INSTALL_EXIT=!ERRORLEVEL!"
+if exist "%VCREDIST_EXE%" del "%VCREDIST_EXE%" >nul 2>&1
+
+if "!VCREDIST_INSTALL_EXIT!"=="0" (
+    echo [OK] Visual C++ Redistributable installed successfully.
+    call :log "VC++ Redistributable installed successfully."
+) else if "!VCREDIST_INSTALL_EXIT!"=="3010" (
+    echo [OK] Visual C++ Redistributable installed. A system reboot is recommended but not required.
+    call :log "VC++ Redistributable installed (exit 3010 = reboot recommended)."
+) else (
+    call :warn "VC++ Redistributable installer exited with code !VCREDIST_INSTALL_EXIT!. Continuing anyway."
+)
 exit /b 0
 
 :ensure_external_tools
