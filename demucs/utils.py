@@ -134,22 +134,22 @@ def average_metric(metric, count=1.):
     return metric[1].item() / metric[0].item()
 
 
-def free_port(host='', low=20000, high=40000):
+def free_port(host='127.0.0.1', low=20000, high=40000):
     """
     Return a port number that is most likely free.
     This could suffer from a race condition although
     it should be quite rare.
     """
-    sock = socket.socket()
     while True:
         port = random.randint(low, high)
         try:
-            sock.bind((host, port))
+            with socket.socket() as sock:
+                sock.bind((host, port))
+                return port
         except OSError as error:
             if error.errno == errno.EADDRINUSE:
                 continue
             raise
-        return port
 
 
 def sizeof_fmt(num, suffix='B'):

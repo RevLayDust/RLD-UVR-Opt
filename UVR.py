@@ -7225,7 +7225,7 @@ def auto_hyperlink(text_widget:tk.Text):
     content = text_widget.get('1.0', tk.END)
     
     # Regular expression to identify URLs
-    urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', content)
+    urls = re.findall(r'https?://(?:[a-zA-Z0-9_\-@.&+/?=:#~%]|[!*(),]|(?:%[0-9a-fA-F]{2}))+', content)
 
     for url in urls:
         start_idx = content.find(url)

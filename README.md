@@ -1,8 +1,8 @@
 <div align="center">
 
-# ⚡ RLD UVR-Opt: Ultimate Vocal Remover GUI (Optimized)
+# RLD UVR-Opt: Ultimate Vocal Remover GUI (Optimized)
 
-[![Release](https://img.shields.io/github/release/revlaydust/rld-uvr-opt-blue.svg)](https://github.com/revlaydust/rld-uvr-opt/releases/latest)
+[![Release](https://img.shields.io/github/v/release/revlaydust/rld-uvr-opt?color=blue)](https://github.com/revlaydust/rld-uvr-opt/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/latest/python3.11/)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%2F11%20(64--bit)-informational.svg?logo=windows&logoColor=white)](#-installation--prerequisites)
@@ -19,15 +19,15 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 />
 <br/>
 
-## 🚀 Up to ~4x Faster Inference &nbsp;|&nbsp; ~53% Lower VRAM Usage
+## Up to ~4x Faster Inference &nbsp;|&nbsp; ~53% Lower VRAM Usage
 
-[Prerequisites & Installation](#-installation--prerequisites) $\cdot$ [Usage & Quick Start](#-usage--quick-start) $\cdot$ [Key Features](#-key-features) $\cdot$ [Verified Benchmarks](#-verified-benchmarks) $\cdot$ [Roadmap](#-roadmap) $\cdot$ [Credits](#-credits--acknowledgments)
+[Prerequisites & Installation](#installation--prerequisites) $\cdot$ [Usage & Quick Start](#usage--quick-start) $\cdot$ [Key Features](#key-features) $\cdot$ [Verified Benchmarks](#verified-benchmarks) $\cdot$ [Roadmap](#roadmap) $\cdot$ [Credits](#credits--acknowledgments)
 
 </div>
 
 ---
 
-## 📦 Installation & Prerequisites
+## Installation & Prerequisites
 
 ### 1. System Requirements & Platform Support
 > [!IMPORTANT]
@@ -49,7 +49,7 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 
 ---
 
-### 3. ⚡ One-Click Automated Installation (Windows)
+### 3. One-Click Automated Installation (Windows)
 
 RLD UVR-Opt provides an automated setup script that handles your entire environment setup from start to finish:
 
@@ -81,12 +81,12 @@ If you installed the **CPU version**, simply launch UVR using `run_uvr.bat`, `py
 > If you encounter any specific issues, feel free to [open an issue](https://github.com/revlaydust/rld-uvr-opt/issues)! 
 
 #### What the One-Click Installer automates for you:
-* 🔍 **Hardware & Driver Detection**: Automatically identifies your GPU architecture (NVIDIA RTX 20/30/40/50 series) and selects PyTorch CUDA 12.8 or optimized CPU fallback.
-* 🐍 **Python Environment Management**: Automatically bootstraps `uv` and provisions an isolated Python 3.11 virtual environment (`venv`).
-* 📦 **Fast Dependency Installation**: Pulls and configures all required packages, including PyTorch and ONNX Runtime GPU/CPU.
-* 🧩 **Visual C++ Redistributable Auto-Install**: Checks whether Microsoft Visual C++ 2015–2022 Redistributable (x64) is installed. If missing or outdated, it automatically downloads and silently installs the official runtime to ensure native C-extensions and runtime DLLs load without errors.
-* 🎬 **Automated Media Binaries**: Detects existing system installations of **FFmpeg** and **rubberband-cli**. If either is missing, it automatically downloads and extracts portable binaries into the application folder—**zero manual downloading required!**
-* 🧪 **Smoke Test Verification**: Runs an immediate runtime sanity check on tensor operations and ONNX execution providers before launching.
+* **Hardware & Driver Detection**: Automatically identifies your GPU architecture (NVIDIA RTX 20/30/40/50 series) and selects PyTorch CUDA 12.8 or optimized CPU fallback.
+* **Python Environment Management**: Automatically bootstraps `uv` and provisions an isolated Python 3.11 virtual environment (`venv`).
+* **Fast Dependency Installation**: Pulls and configures all required packages, including PyTorch and ONNX Runtime GPU/CPU.
+* **Visual C++ Redistributable Auto-Install**: Checks whether Microsoft Visual C++ 2015–2022 Redistributable (x64) is installed. If missing or outdated, it automatically downloads and silently installs the official runtime to ensure native C-extensions and runtime DLLs load without errors.
+* **Automated Media Binaries**: Detects existing system installations of **FFmpeg** and **rubberband-cli**. If either is missing, it automatically downloads and extracts portable binaries into the application folder—**zero manual downloading required!**
+* **Smoke Test Verification**: Runs an immediate runtime sanity check on tensor operations and ONNX execution providers before launching.
 
 <details>
   <summary><b>🛠️ Manual Installation via Astral uv (Click to Expand for Advanced Users)</b></summary>
@@ -132,7 +132,7 @@ If you prefer to configure your environment manually instead of running `install
 
 </details>
 
-## 🚀 Usage / Quick Start
+## Usage / Quick Start
 
 Get from zero to audio separation in seconds:
 
@@ -162,17 +162,17 @@ uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --overlap 0.50 --segme
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-* **⚡ Accelerated ONNX Inference**: Optimized tensor pipelines and buffer handling reduce unnecessary overhead during chunk processing.
-* **📟 In-Memory FP16 Conversion**: FP16 conversion is performed in memory without requiring persistent `.fp16.onnx` files.
-* **🧹 Memory & Session Management**: Improved session and allocation handling helps reduce unnecessary resource usage across runs.
-* **⚡ Faster CLI Startup**: Deferred loading of heavy runtime modules reduces startup work before inference is requested.
-* **🎯 Benchmark Telemetry**: Built-in measurements and metadata help compare inference performance across controlled test runs.
+* **Accelerated ONNX Inference**: Optimized tensor pipelines and buffer handling reduce unnecessary overhead during chunk processing.
+* **In-Memory FP16 Conversion**: FP16 conversion is performed in memory without requiring persistent `.fp16.onnx` files.
+* **Memory & Session Management**: Improved session and allocation handling helps reduce unnecessary resource usage across runs.
+* **Faster CLI Startup**: Deferred loading of heavy runtime modules reduces startup work before inference is requested.
+* **Benchmark Telemetry**: Built-in measurements and metadata help compare inference performance across controlled test runs.
 
 ---
 
-## 📊 Verified Benchmarks
+## Verified Benchmarks
 
 All metrics were gathered using the built-in isolated benchmark suite on identical test audio (**48.34s** stereo WAV, model: `UVR-MDX-NET-Inst_HQ_4.onnx`, Ultra Quality FP32). The results below reflect the documented test configuration and are not a universal performance guarantee.
 
@@ -196,7 +196,7 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 ---
 
-## 🧭 Roadmap
+## Roadmap
 
 - [x] Accelerated ONNX inference pipeline and buffer optimizations.
 - [x] In-memory `FP16` downcasting (e.g., `FP32` $\rightarrow$ `FP16`) and cache lifecycle management.
@@ -208,7 +208,7 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 ---
 
-## 👥 Credits & Acknowledgments
+## Credits & Acknowledgments
 
 ### RLD UVR-Opt Maintainer
 * [**RevLayDust**](https://github.com/revlaydust) — Core architecture optimizations, ONNX pipeline acceleration, CLI engine, and memory lifecycle management.
@@ -230,7 +230,7 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 ---
 
-## 📄 License & References
+## License & References
 
 The **Ultimate Vocal Remover GUI** and **RLD UVR-Opt** codebase is open-source and released under the [**MIT License**](LICENSE).
 
