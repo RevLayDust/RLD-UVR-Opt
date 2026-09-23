@@ -33,14 +33,15 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 > [!IMPORTANT]
 > **Platform Support**: RLD UVR-Opt is actively tested and optimized exclusively for **Windows 10 / 11 (64-bit)**.
 
-* **Python**: **Python 3.11 or higher (64-bit)** is required.
 * **Compute Device**:
   * **NVIDIA GPU (CUDA)**: NVIDIA GeForce RTX 20 Series GPU or higher with at least 6GB VRAM is the minimum requirement for GPU conversions (**8GB+ VRAM recommended for optimal performance**).
   * **CPU**: Multi-core modern 64-bit x86 processor (fully supported via multi-threaded CPU inference).
   * *(Note: Hardware focus is strictly on **CUDA** and **CPU**).*
+* **Python**: **Optional** (the automated installer automatically bootstraps a standalone Python 3.11 environment via `uv`). Installing system **Python 3.11+ (64-bit)** is only required if you plan on manual setup, development, or debugging.
 
 ### 2. Model & Architecture Scope
 
+> [!NOTE]
 > **ONNX Model Priority**:  
  RLD UVR-Opt's core acceleration pipeline is built around ONNX Runtime for `.onnx` models.  
  **Officially supported and tested**: `.onnx` models from the **MDX-Net family** on the documented CUDA and CPU paths.
@@ -66,7 +67,8 @@ Simply double-click `install\install_packages.bat` in File Explorer, or run in t
 ```
 
 #### Step 3: Run the GUI
-If you installed the **GPU version**, you must follow these steps:
+> [!IMPORTANT]
+> If you installed the **GPU version**, you must follow these steps:
 
 1. Open UVR using `run_uvr.bat` or `python UVR.py`.
 2. Go to **Main Settings** (to the left of the **Start Processing** button with the wrench icon) → **Additional Settings** → Change **GPU Device** from the default setting to your GPU using the dropdown menu.
@@ -82,6 +84,7 @@ If you installed the **CPU version**, simply launch UVR using `run_uvr.bat`, `py
 * 🔍 **Hardware & Driver Detection**: Automatically identifies your GPU architecture (NVIDIA RTX 20/30/40/50 series) and selects PyTorch CUDA 12.8 or optimized CPU fallback.
 * 🐍 **Python Environment Management**: Automatically bootstraps `uv` and provisions an isolated Python 3.11 virtual environment (`venv`).
 * 📦 **Fast Dependency Installation**: Pulls and configures all required packages, including PyTorch and ONNX Runtime GPU/CPU.
+* 🧩 **Visual C++ Redistributable Auto-Install**: Checks whether Microsoft Visual C++ 2015–2022 Redistributable (x64) is installed. If missing or outdated, it automatically downloads and silently installs the official runtime to ensure native C-extensions and runtime DLLs load without errors.
 * 🎬 **Automated Media Binaries**: Detects existing system installations of **FFmpeg** and **rubberband-cli**. If either is missing, it automatically downloads and extracts portable binaries into the application folder—**zero manual downloading required!**
 * 🧪 **Smoke Test Verification**: Runs an immediate runtime sanity check on tensor operations and ONNX execution providers before launching.
 
