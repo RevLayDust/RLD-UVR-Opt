@@ -201,8 +201,8 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 - [x] Accelerated ONNX inference pipeline and buffer optimizations.
 - [x] In-memory `FP16` downcasting (e.g., `FP32` $\rightarrow$ `FP16`) and cache lifecycle management.
 - [ ] In-memory `BF16`/`FP8 E4M3FN` downcasting.
-- [ ] **Windows ML (via ONNX Runtime)**: Evaluate as a broader Windows execution-provider path for supported hardware.
-- [ ] **TensorRT Execution Provider (via ONNX Runtime)**: Evaluate as an optional NVIDIA acceleration path, with **CUDA EP** retained as the stable fallback.
+- [ ] **TensorRT-RTX Execution Provider (via ONNX Runtime)**: Evaluate optional acceleration for NVIDIA RTX GPUs (Ampere+), with CUDA EP retained as the stable fallback.
+- [ ] **Windows ML Execution Provider (via ONNX Runtime)**: Evaluate acceleration path for non-NVIDIA hardware (AMD, Intel) on Windows 11 (24H2+).
 - [ ] Support for Newer Model Architectures.
 - [ ] UI/UX Overhaul.
 

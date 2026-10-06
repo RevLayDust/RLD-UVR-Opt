@@ -370,25 +370,39 @@ call :log "Checking Visual C++ Redistributable"
 
 set "VCREDIST_OK=0"
 
-rem -- Check installed VC++ 2015-2022 x64 via registry (version must be >= 14.40)
-for /f "tokens=* usebackq" %%V in (`reg query "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64" /v Version 2^>nul`) do (
-    set "VCREDIST_REG_LINE=%%V"
+rem -- Primary check: Visual Studio 2015-2022 x64 runtime registry key (Version must be >= 14.40)
+for /f "tokens=1,2,*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64" /v Version 2^>nul ^| findstr /i "Version"') do (
+    set "VCREDIST_VER=%%C"
 )
-if defined VCREDIST_REG_LINE (
-    for /f "tokens=3" %%A in ('echo !VCREDIST_REG_LINE!') do set "VCREDIST_VER=%%A"
-    rem VCREDIST_VER looks like v14.40.33810 or v14.38 -- check major minor
-    for /f "tokens=1,2 delims=." %%M in ('echo !VCREDIST_VER:v=!') do (
+if defined VCREDIST_VER (
+    set "VCREDIST_VER=!VCREDIST_VER:v=!"
+    for /f "tokens=1,2 delims=." %%M in ("!VCREDIST_VER!") do (
         set "VCREDIST_MAJOR=%%M"
         set "VCREDIST_MINOR=%%N"
     )
-    if "!VCREDIST_MAJOR!"=="14" (
-        if !VCREDIST_MINOR! GEQ 40 set "VCREDIST_OK=1"
+    if defined VCREDIST_MAJOR if defined VCREDIST_MINOR (
+        if !VCREDIST_MAJOR! GTR 14 set "VCREDIST_OK=1"
+        if "!VCREDIST_MAJOR!"=="14" (
+            if !VCREDIST_MINOR! GEQ 40 set "VCREDIST_OK=1"
+        )
     )
 )
 
+rem -- Secondary check: Installed and Minor DWORD keys if Version string was inconclusive
 if "!VCREDIST_OK!"=="0" (
-    rem -- Also check via Programs registry key (fallback for older installs)
-    for /f "usebackq" %%K in (`reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" /f "Microsoft Visual C++ 2015-2022 Redistributable (x64)" /s /k 2^>nul ^| findstr /i "Uninstall\\{" 2^>nul`) do (
+    for /f "tokens=1,2,*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64" /v Installed 2^>nul ^| findstr /i "Installed"') do (
+        if "%%C"=="0x1" (
+            for /f "tokens=1,2,*" %%X in ('reg query "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64" /v Minor 2^>nul ^| findstr /i "Minor"') do (
+                set /a "VCREDIST_MINOR_DEC=%%Z" 2^>nul
+                if !VCREDIST_MINOR_DEC! GEQ 40 set "VCREDIST_OK=1"
+            )
+        )
+    )
+)
+
+rem -- Fallback: check Uninstall registry for 64-bit VC++ 2015-2022 / 2022 runtimes
+if "!VCREDIST_OK!"=="0" (
+    for /f "tokens=*" %%K in ('reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" /s /f "Visual C++" /d /reg:64 2^>nul ^| findstr /i "X64" ^| findstr /i /c:"2015" /c:"2017" /c:"2019" /c:"2022"') do (
         set "VCREDIST_OK=1"
     )
 )
