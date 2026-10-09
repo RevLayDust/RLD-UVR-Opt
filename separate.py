@@ -409,6 +409,78 @@ def create_onnx_fp16_session(model_path, providers):
 
 
 def create_onnx_session(model_path, providers, precision_policy):
+    # Delegate to TensorRT-RTX wrapper if TensorRT-RTX was requested
+    is_trt_requested = any(
+        (isinstance(p, tuple) and "NvTensorRTRTX" in p[0]) or (isinstance(p, str) and "NvTensorRTRTX" in p)
+        for p in providers
+    ) if isinstance(providers, (list, tuple)) else False
+
+    if is_trt_requested:
+        from engine.tensorrt_rtx import create_trt_rtx_session
+        dev_id = 0
+        cuda_options = None
+        if isinstance(providers, (list, tuple)):
+            for p in providers:
+                if isinstance(p, tuple):
+                    if p[0] == 'CUDAExecutionProvider' and isinstance(p[1], dict):
+                        cuda_options = p[1]
+                    if isinstance(p[1], dict) and "device_id" in p[1]:
+                        try:
+                            dev_id = int(p[1]["device_id"])
+                        except Exception:
+                            dev_id = 0
+
+        model_name = os.path.basename(model_path)
+        if precision_policy.is_fp16:
+            # Respect FP16 preset on TensorRT-RTX path
+            import onnx
+            from onnxconverter_common import float16
+
+            print(f"[PRECISION] Loading {model_name} into CPU RAM for in-memory FP16 conversion...")
+            try:
+                model_fp32 = onnx.load(model_path, load_external_data=True)
+                try:
+                    model_fp16 = float16.convert_float_to_float16(model_fp32, keep_io_types=False)
+                finally:
+                    del model_fp32
+                    gc.collect()
+
+                try:
+                    serialized_fp16 = model_fp16.SerializeToString()
+                finally:
+                    del model_fp16
+                    gc.collect()
+
+                print(f"[PRECISION] Creating TensorRT-RTX FP16 session from RAM ({len(serialized_fp16) / (1024 ** 2):.2f} MiB)...")
+                try:
+                    return create_trt_rtx_session(
+                        serialized_fp16,
+                        device_id=dev_id,
+                        cuda_options=cuda_options,
+                        model_name=model_name,
+                    )
+                finally:
+                    del serialized_fp16
+                    gc.collect()
+            except Exception as error:
+                print(
+                    f"[PRECISION] In-memory FP16 conversion failed ({type(error).__name__}: {error}). "
+                    "Falling back to the original FP32 ONNX model without writing a temporary file."
+                )
+                return create_trt_rtx_session(
+                    model_path,
+                    device_id=dev_id,
+                    cuda_options=cuda_options,
+                    model_name=model_name,
+                )
+        else:
+            return create_trt_rtx_session(
+                model_path,
+                device_id=dev_id,
+                cuda_options=cuda_options,
+                model_name=model_name,
+            )
+
     if not precision_policy.is_fp16:
         return ort.InferenceSession(model_path, providers=providers)
 
@@ -420,6 +492,7 @@ def create_onnx_session(model_path, providers, precision_policy):
             "Falling back to the original FP32 ONNX model without writing a temporary file."
         )
         return ort.InferenceSession(model_path, providers=providers)
+
 
  
 if TYPE_CHECKING:
@@ -585,7 +658,11 @@ class SeperateAttributes:
                         'cudnn_conv_algo_search': 'HEURISTIC',
                         'do_copy_in_default_stream': 'True'
                     }
-                    self.run_type = [('CUDAExecutionProvider', cuda_options), 'CPUExecutionProvider']
+                    chosen_ep = getattr(model_data, 'execution_provider', 'CUDAExecutionProvider')
+                    if chosen_ep == 'NvTensorRTRTXExecutionProvider':
+                        self.run_type = ['NvTensorRTRTXExecutionProvider', ('CUDAExecutionProvider', cuda_options), 'CPUExecutionProvider']
+                    else:
+                        self.run_type = [('CUDAExecutionProvider', cuda_options), 'CPUExecutionProvider']
 
         if model_data.process_method == MDX_ARCH_TYPE:
             self.is_mdx_ckpt = model_data.is_mdx_ckpt

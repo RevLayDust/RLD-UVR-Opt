@@ -670,6 +670,7 @@ DEFAULT_DATA = {
         'save_format': WAV,
         'wav_type_set': 'PCM_16',
         'device_set': DEFAULT,
+        'execution_provider': 'CUDAExecutionProvider',
         'user_code': '',
         'export_path': '',
         'input_paths': [],
@@ -781,6 +782,7 @@ SETTING_CHECK = ('vr_model',
                'save_format',
                'wav_type_set',
                'device_set',
+               'execution_provider',
                'user_code',
                'is_gpu_conversion',
                'model_precision',
@@ -1050,6 +1052,10 @@ IS_TIME_CORRECTION_HELP = ('When checked, the output will retain the original BP
 SAVE_STEM_ONLY_HELP = 'Allows the user to save only the selected stem.'
 IS_NORMALIZATION_HELP = 'Normalizes output to prevent clipping.'
 IS_CUDA_SELECT_HELP = "If you have more than one GPU, you can pick which one to use for processing."
+EXECUTION_PROVIDER_TEXT = "Execution Provider"
+IS_EXECUTION_PROVIDER_HELP = ("Select the ONNX Runtime execution provider for accelerated inference:\n"
+                              "• CUDAExecutionProvider: Stable & proven baseline for all NVIDIA GPUs.\n"
+                              "• NvTensorRTRTXExecutionProvider / TensorrtExecutionProvider: Experimental fast TensorRT-RTX acceleration.")
 CROP_SIZE_HELP = '**Only compatible with select models only!**\n\n Setting should match training crop-size value. Leave as is if unsure.'
 IS_TTA_HELP = ('This option performs Test-Time-Augmentation to improve the separation quality.\n\n'
                'Note: Having this selected will increase the time it takes to complete a conversion')

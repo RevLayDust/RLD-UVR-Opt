@@ -373,6 +373,8 @@ class ModelData():
         self.mdx_n_fft_scale_set = None
         self.wav_type_set = root.wav_type_set#
         self.device_set = device_set.split(':')[-1].strip() if ':' in device_set else device_set
+        ep_var = getattr(root, 'execution_provider_var', None)
+        self.execution_provider = ep_var.get() if ep_var is not None else 'CUDAExecutionProvider'
         self.mp3_bit_set = root.mp3_bit_set_var.get()
         self.save_format = root.save_format_var.get()
         self.is_invert_spec = root.is_invert_spec_var.get()#
@@ -3173,23 +3175,72 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
 
     def fill_gpu_list(self):
         try:
-            if cuda_available:
+            from engine.tensorrt_rtx import is_ort_gpu_available
+            ort_gpu = is_ort_gpu_available()
+        except Exception:
+            ort_gpu = False
+
+        try:
+            if cuda_available and ort_gpu:
                 self.cuda_device_list = [f"{torch.cuda.get_device_properties(i).name}:{i}" for i in range(torch.cuda.device_count())]
                 self.cuda_device_list.insert(0, DEFAULT)
-                #print(self.cuda_device_list)
-            
-            # if directml_available:
-            #     self.opencl_list = [f"{torch_directml.device_name(i)}:{i}" for i in range(torch_directml.device_count())]
-            #     self.opencl_list.insert(0, DEFAULT)
+            else:
+                self.cuda_device_list = [DEFAULT]
         except Exception as e:
             print(e)
+            self.cuda_device_list = [DEFAULT]
             
-        # if is_cuda_only:
-        #     self.is_use_opencl_var.set(False)
-            
-        check_gpu_list = self.cuda_device_list#self.opencl_list if is_opencl_only or self.is_use_opencl_var.get() else self.cuda_device_list
+        check_gpu_list = self.cuda_device_list
         if not self.device_set_var.get() in check_gpu_list:
             self.device_set_var.set(DEFAULT)
+        self.update_execution_provider_ui()
+
+    def update_execution_provider_ui(self, ep_option=None, ep_label=None):
+        """Update Execution Provider selection and widget state (task 2)."""
+        from engine.tensorrt_rtx import get_supported_execution_providers
+
+        is_gpu_selected = self.device_set_var.get() != DEFAULT
+        dev_id = 0
+        if is_gpu_selected:
+            try:
+                dev_id = int(self.device_set_var.get().split(':')[-1].strip())
+            except Exception:
+                dev_id = 0
+
+        supported = get_supported_execution_providers(has_gpu_selected=is_gpu_selected, device_id=dev_id)
+        self.execution_provider_list = supported
+
+        if ep_option is not None:
+            ep_option['values'] = self.execution_provider_list
+            if not is_gpu_selected:
+                # Rule 3: Lock the Execution Provider option (greyed out) until a GPU Device is chosen
+                ep_option.configure(state='disabled')
+            else:
+                # Rule 2: Enable and allow selection
+                ep_option.configure(state='readonly')
+
+        if ep_label is not None:
+            if not is_gpu_selected:
+                try:
+                    ep_label.configure(state='disabled', foreground='gray')
+                except Exception:
+                    pass
+            else:
+                try:
+                    ep_label.configure(state='normal', foreground='#13849f')
+                except Exception:
+                    pass
+
+        # Validate stored provider ONLY when a GPU Device is selected (Rule 2).
+        # While locked (Rule 3), preserve the user's stored choice intact.
+        if is_gpu_selected:
+            current_ep = self.execution_provider_var.get()
+            if current_ep not in self.execution_provider_list:
+                default_ep = (
+                    'CUDAExecutionProvider' if 'CUDAExecutionProvider' in self.execution_provider_list
+                    else (self.execution_provider_list[0] if self.execution_provider_list else 'CUDAExecutionProvider')
+                )
+                self.execution_provider_var.set(default_ep)
 
     def loop_gpu_list(self, option_menu:ComboBoxMenu, menu_name, option_list):
         option_menu['values'] = option_list
@@ -3346,7 +3397,9 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         #if not is_choose_arch:
         self.vocal_splitter_Button_opt(settings_menu, settings_menu_format_Frame, width=SETTINGS_BUT_WIDTH-2, pady=MENU_PADDING_4)
 
-        if not is_macos and self.is_gpu_available:
+        from engine.tensorrt_rtx import is_ort_gpu_available
+        has_ort_gpu = is_ort_gpu_available()
+        if not is_macos and self.is_gpu_available and has_ort_gpu:
             gpu_list_options = lambda:self.loop_gpu_list(device_set_Option, 'gpudevice', self.cuda_device_list)#self.opencl_list if is_opencl_only or self.is_use_opencl_var.get() else self.cuda_device_list)
             device_set_Label = self.menu_title_LABEL_SET(settings_menu_format_Frame, CUDA_NUM_TEXT)
             device_set_Label.grid(pady=MENU_PADDING_2)
@@ -3355,6 +3408,18 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             device_set_Option.grid(padx=20,pady=MENU_PADDING_1)
             gpu_list_options()
             self.help_hints(device_set_Label, text=IS_CUDA_SELECT_HELP)
+
+            execution_provider_Label = self.menu_title_LABEL_SET(settings_menu_format_Frame, EXECUTION_PROVIDER_TEXT)
+            execution_provider_Label.grid(pady=MENU_PADDING_2)
+            
+            execution_provider_Option = ComboBoxMenu(settings_menu_format_Frame, textvariable=self.execution_provider_var, values=self.execution_provider_list, width=GEN_SETTINGS_WIDTH+1)
+            execution_provider_Option.grid(padx=20, pady=MENU_PADDING_1)
+            self.help_hints(execution_provider_Label, text=IS_EXECUTION_PROVIDER_HELP)
+
+            update_ep_callback = lambda *args: self.update_execution_provider_ui(execution_provider_Option, execution_provider_Label)
+            device_set_Option.bind('<<ComboboxSelected>>', lambda e: update_ep_callback())
+            update_ep_callback()
+
             
             model_precision_Label = self.menu_title_LABEL_SET(settings_menu_format_Frame, 'Precision Mode Preset')
             model_precision_Label.grid(pady=MENU_PADDING_2)
@@ -6852,6 +6917,8 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         self.save_format_var = tk.StringVar(value=data['save_format'])
         self.wav_type_set_var = tk.StringVar(value=data['wav_type_set'])#
         self.device_set_var = tk.StringVar(value=data['device_set'])#
+        self.execution_provider_var = tk.StringVar(value=data.get('execution_provider', 'CUDAExecutionProvider'))
+        self.execution_provider_list = ['CUDAExecutionProvider']
         self.user_code_var = tk.StringVar(value=data['user_code']) 
         self.is_gpu_conversion_var = tk.BooleanVar(value=data['is_gpu_conversion'])
         self.model_precision_var = tk.StringVar(value=normalize_model_precision(data.get('model_precision')))
@@ -6998,6 +7065,7 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             self.save_format_var.set(loaded_setting['save_format'])
             self.wav_type_set_var.set(loaded_setting['wav_type_set'])#
             self.device_set_var.set(loaded_setting['device_set'])#
+            self.execution_provider_var.set(loaded_setting.get('execution_provider', 'CUDAExecutionProvider'))
             self.user_code_var.set(loaded_setting['user_code'])
             self.phase_option_var.set(loaded_setting['phase_option'])#
             self.phase_shifts_var.set(loaded_setting['phase_shifts'])#
@@ -7138,6 +7206,7 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             'save_format': self.save_format_var.get(),
             'wav_type_set': self.wav_type_set_var.get(),#
             'device_set': self.device_set_var.get(),#
+            'execution_provider': self.execution_provider_var.get(),
             'user_code': self.user_code_var.get(),
             'help_hints_var': self.help_hints_var.get(),
             'set_vocal_splitter': self.set_vocal_splitter_var.get(),

@@ -106,15 +106,19 @@ def handle_run(args: argparse.Namespace) -> int:
     precision = normalize_cli_precision(args.precision)
 
     print(f"Resolving model: {model_path.name} ({arch})")
-    model_data = build_headless_model_data(
-        model_path=model_path,
-        architecture=arch,
-        precision=precision,
-        device=args.device,
-        segment_size=args.segment_size,
-        overlap=args.overlap,
-        batch_size=args.batch_size,
-    )
+    try:
+        model_data = build_headless_model_data(
+            model_path=model_path,
+            architecture=arch,
+            precision=precision,
+            device=args.device,
+            segment_size=args.segment_size,
+            overlap=args.overlap,
+            batch_size=args.batch_size,
+        )
+    except ValueError as val_err:
+        print(f"[ERROR] {val_err}")
+        return 1
 
     audio_path = Path(args.audio).resolve()
     output_dir = Path(args.output_dir).resolve()
@@ -192,15 +196,19 @@ def handle_bench(args: argparse.Namespace) -> int:
     model_path, arch = resolve_model_file(args.model)
     precision = normalize_cli_precision(args.precision)
 
-    model_data = build_headless_model_data(
-        model_path=model_path,
-        architecture=arch,
-        precision=precision,
-        device=args.device,
-        segment_size=args.segment_size,
-        overlap=args.overlap,
-        batch_size=args.batch_size,
-    )
+    try:
+        model_data = build_headless_model_data(
+            model_path=model_path,
+            architecture=arch,
+            precision=precision,
+            device=args.device,
+            segment_size=args.segment_size,
+            overlap=args.overlap,
+            batch_size=args.batch_size,
+        )
+    except ValueError as val_err:
+        print(f"[ERROR] {val_err}")
+        return 1
 
     device_idx = int(args.device.split(":")[-1]) if ":" in args.device else 0
 
@@ -245,12 +253,16 @@ def handle_smoke_test(args: argparse.Namespace) -> int:
 
         print(f"Selected smoke test model: {model_path.name} ({arch})")
 
-        model_data = build_headless_model_data(
-            model_path=model_path,
-            architecture=arch,
-            precision=precision,
-            device=args.device,
-        )
+        try:
+            model_data = build_headless_model_data(
+                model_path=model_path,
+                architecture=arch,
+                precision=precision,
+                device=args.device,
+            )
+        except ValueError as val_err:
+            print(f"[ERROR] {val_err}")
+            return 1
 
         device_idx = int(args.device.split(":")[-1]) if ":" in args.device else 0
 
@@ -303,7 +315,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="fp16",
         help="Inference precision: fp32, fp16, bf16 (default: fp16)",
     )
-    run_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda:0, cpu (default: cuda:0)")
+    run_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda[:N], trt_rtx[:N], cpu (default: cuda:0)")
     run_parser.add_argument("--output-dir", "-o", default="separated_outputs", help="Output directory for stems")
     run_parser.add_argument("--segment-size", type=int, default=None, help="Segment size (MDX chunk size)")
     run_parser.add_argument("--overlap", type=float, default=None, help="Overlap ratio (e.g. 0.25)")
@@ -325,7 +337,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="fp16",
         help="Inference precision: fp32, fp16, bf16 (default: fp16)",
     )
-    bench_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda:0, cpu (default: cuda:0)")
+    bench_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda[:N], trt_rtx[:N], cpu (default: cuda:0)")
     bench_parser.add_argument("--rounds", "-r", type=int, default=3, help="Number of measurement rounds (default: 3)")
     bench_parser.add_argument("--warmup", "-w", type=int, default=1, help="Number of warmup rounds (default: 1)")
     bench_parser.add_argument(
@@ -342,7 +354,7 @@ def build_parser() -> argparse.ArgumentParser:
     smoke_parser = subparsers.add_parser("smoke-test", help="Run automated smoke test using synthetic audio")
     smoke_parser.add_argument("--model", "-m", default=None, help="Optional model name (defaults to first available)")
     smoke_parser.add_argument("--precision", "-p", default="fp16", help="Inference precision (default: fp16)")
-    smoke_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda:0, cpu (default: cuda:0)")
+    smoke_parser.add_argument("--device", "-d", default="cuda:0", help="Target device: cuda[:N], trt_rtx[:N], cpu (default: cuda:0)")
     smoke_parser.add_argument(
         "--export-dir",
         "-e",

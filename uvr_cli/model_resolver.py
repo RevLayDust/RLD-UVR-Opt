@@ -100,6 +100,7 @@ class HeadlessModelData:
         self.model_hash: Optional[str] = None
         self.model_status: bool = True
         self.device_set: str = "0"
+        self.execution_provider: str = "CUDAExecutionProvider"
         self.is_gpu_conversion: int = 0
         self.is_use_opencl: bool = False
         self.model_precision: str = MODEL_PRECISION_DEFAULT
@@ -276,6 +277,43 @@ def resolve_model_file(model_identifier: str) -> Tuple[Path, str]:
     )
 
 
+def parse_and_validate_device(device_str: str) -> Tuple[bool, str, str]:
+    """Parse and validate CLI device string.
+
+    Returns:
+        (is_gpu, device_index, execution_provider)
+
+    Raises:
+        ValueError if the device format or name is invalid.
+    """
+    dev = device_str.strip().lower()
+    if dev == "cpu":
+        return False, "0", "CPUExecutionProvider"
+
+    parts = dev.split(":")
+    prefix = parts[0]
+    index = parts[1] if len(parts) > 1 else "0"
+
+    if prefix not in ("cuda", "trt_rtx", "directml"):
+        raise ValueError(
+            f"Invalid device '{device_str}'. Valid choices are: 'cuda[:N]', 'trt_rtx[:N]', or 'cpu' (e.g. 'cuda:0', 'trt_rtx:0', 'cpu')."
+        )
+
+    if not index.isdigit():
+        raise ValueError(
+            f"Invalid device index in '{device_str}'. Device index must be an integer (e.g. 'cuda:0', 'trt_rtx:0')."
+        )
+
+    if prefix == "trt_rtx":
+        ep = "NvTensorRTRTXExecutionProvider"
+    elif prefix == "cuda":
+        ep = "CUDAExecutionProvider"
+    else:
+        ep = "CUDAExecutionProvider"
+
+    return True, index, ep
+
+
 def build_headless_model_data(
     model_path: Path,
     architecture: str,
@@ -291,8 +329,26 @@ def build_headless_model_data(
     model_basename = model_path.stem
     model_hash = compute_uvr_hash(model_path)
 
-    is_gpu = "cuda" in device.lower() or "directml" in device.lower()
-    device_set = device.split(":")[-1] if ":" in device else "0"
+    is_gpu, device_set, chosen_ep = parse_and_validate_device(device)
+
+    # Provider availability and fallback
+    if is_gpu:
+        import torch
+        if not torch.cuda.is_available():
+            print(f"[WARN] GPU acceleration requested ('{device}') but CUDA is not available. Falling back to CPU.")
+            is_gpu = False
+            device_set = "0"
+            chosen_ep = "CPUExecutionProvider"
+        elif chosen_ep == "NvTensorRTRTXExecutionProvider":
+            try:
+                from engine.tensorrt_rtx import is_trt_rtx_available
+                dev_idx = int(device_set)
+                if not is_trt_rtx_available(dev_idx):
+                    print(f"[BACKEND] TensorRT-RTX EP is not available on device {dev_idx}. Falling back to CUDAExecutionProvider.")
+                    chosen_ep = "CUDAExecutionProvider"
+            except Exception:
+                print("[BACKEND] TensorRT-RTX EP check failed. Falling back to CUDAExecutionProvider.")
+                chosen_ep = "CUDAExecutionProvider"
 
     clean_prec = precision.strip().lower()
     if clean_prec in ("fp32", "32"):
@@ -315,6 +371,8 @@ def build_headless_model_data(
         device_name=device,
         is_gpu_conversion=0 if is_gpu else -1,
     )
+    data.execution_provider = chosen_ep
+
 
     if segment_size is not None:
         data.segment_size = segment_size

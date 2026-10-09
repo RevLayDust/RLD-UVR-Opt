@@ -49,7 +49,7 @@ venv\Scripts\python.exe -m uvr_cli run `
     --audio "path/to/song.wav" `
     --model "UVR-MDX-NET-Inst_HQ_4.onnx" `
     --precision fp16 `
-    --device cuda:0 `
+    --device trt_rtx:0 ` 
     --output-dir "separated_outputs"
 ```
 
@@ -60,7 +60,7 @@ venv\Scripts\python.exe -m uvr_cli run `
 | `--audio` | `-a` | `Path` | *Required* | Path to the input audio file to separate (WAV, FLAC, MP3, etc.). |
 | `--model` | `-m` | `String` | *Required* | Model filename (e.g. `UVR-MDX-NET-Inst_HQ_4.onnx`), friendly name, or absolute path. |
 | `--precision` | `-p` | `Choice` | `fp16` | Inference precision policy: `fp16` (default, in-memory downcast), `fp32`, or `bf16` (experimental). |
-| `--device` | `-d` | `String` | `cuda:0` | Target execution device (`cuda:0`, `cuda:1`, or `cpu`). |
+| `--device` | `-d` | `String` | `cuda:0` | Target execution device (`cuda[:N]`, `trt_rtx[:N]`, or `cpu`). |
 | `--output-dir` | `-o` | `Path` | `separated_outputs` | Output directory where separated stem files will be saved. |
 | `--segment-size` | | `Integer` | *Model Default* | MDX chunk size in samples (e.g. `256`, `3000`, `4000`, `6000`). |
 | `--overlap` | | `Float` | *Model Default* | Overlap ratio between adjacent chunks (e.g. `0.25`, `0.50`, `0.75`). |
@@ -103,7 +103,7 @@ venv\Scripts\python.exe -m uvr_cli bench `
 | `--audio` | `-a` | `Path` | *Required* | Path to input audio file for benchmarking (uncompressed WAV recommended). |
 | `--model` | `-m` | `String` | *Required* | Model filename, friendly name, or absolute path to benchmark. |
 | `--precision` | `-p` | `Choice` | `fp16` | Inference precision policy: `fp16`, `fp32`, or `bf16` (experimental). |
-| `--device` | `-d` | `String` | `cuda:0` | Target execution device (`cuda:0`, `cpu`). |
+| `--device` | `-d` | `String` | `cuda:0` | Target execution device (`cuda[:N]`, `trt_rtx[:N]`, or `cpu`). |
 | `--rounds` | `-r` | `Integer` | `3` | Number of measured benchmark rounds to run after warmup. |
 | `--warmup` | `-w` | `Integer` | `1` | Number of untimed warmup rounds to prime model sessions, ONNX memory, and CUDA allocations. |
 | `--export-dir` | `-e` | `Path` | `benchmark_results` | Directory where JSON telemetry reports and `summary.csv` will be saved. |

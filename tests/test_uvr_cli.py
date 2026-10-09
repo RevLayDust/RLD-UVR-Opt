@@ -16,6 +16,7 @@ from uvr_cli.model_resolver import (
     HeadlessModelData,
     build_headless_model_data,
     list_available_models,
+    parse_and_validate_device,
     resolve_model_file,
 )
 from uvr_cli.progress import InferenceProgressBar
@@ -69,6 +70,31 @@ class BenchmarkCLITests(unittest.TestCase):
         self.assertEqual(model_data_custom.mdx_batch_size, 2)
         self.assertEqual(model_data_custom.batch_size, 2)
         self.assertEqual(model_data_custom.device_name, "cuda:0")
+
+    def test_device_selection_cuda_and_cpu(self):
+        is_gpu, idx, ep = parse_and_validate_device("cuda:0")
+        self.assertTrue(is_gpu)
+        self.assertEqual(idx, "0")
+        self.assertEqual(ep, "CUDAExecutionProvider")
+
+        is_gpu, idx, ep = parse_and_validate_device("cpu")
+        self.assertFalse(is_gpu)
+        self.assertEqual(idx, "0")
+        self.assertEqual(ep, "CPUExecutionProvider")
+
+    def test_device_selection_trt_rtx(self):
+        is_gpu, idx, ep = parse_and_validate_device("trt_rtx:0")
+        self.assertTrue(is_gpu)
+        self.assertEqual(idx, "0")
+        self.assertEqual(ep, "NvTensorRTRTXExecutionProvider")
+
+    def test_device_selection_invalid_rejected(self):
+        with self.assertRaises(ValueError):
+            parse_and_validate_device("vulkan:0")
+        with self.assertRaises(ValueError):
+            parse_and_validate_device("cuda:invalid")
+        with self.assertRaises(ValueError):
+            parse_and_validate_device("invalid")
 
     def test_telemetry_sampler_lifecycle(self):
         sampler = TelemetrySampler(device_index=0, interval_sec=0.05)

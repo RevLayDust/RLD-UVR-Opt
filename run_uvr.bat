@@ -13,7 +13,7 @@ if not exist "%UVR_PYTHON%" (
 )
 
 echo Starting Ultimate Vocal Remover...
-powershell.exe -NoLogo -NoProfile -Command "& { & $env:UVR_PYTHON -u (Join-Path $env:UVR_ROOT 'UVR.py') 2>&1 | Tee-Object -FilePath $env:UVR_LOG; $uvrExitCode = $LASTEXITCODE; if ($null -eq $uvrExitCode) { $uvrExitCode = 1 }; exit $uvrExitCode }"
+"%UVR_PYTHON%" "%UVR_ROOT%UVR.py"
 set "UVR_EXIT_CODE=%ERRORLEVEL%"
 if not "%UVR_EXIT_CODE%"=="0" echo [ERROR] UVR exited with code %UVR_EXIT_CODE%. See uvr_run.log for details.
 pause

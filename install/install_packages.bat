@@ -48,6 +48,7 @@ if not exist "%REQ_FILE%" (
 
 call :check_windows
 call :detect_gpu
+call :check_previous_install
 call :choose_mode
 call :ensure_uv
 if errorlevel 1 exit /b 1
@@ -58,6 +59,8 @@ if errorlevel 1 exit /b 1
 
 if /i "%INSTALL_MODE%"=="CPU" (
     call :install_cpu_stack
+) else if /i "%INSTALL_MODE%"=="TENSORRT_RTX" (
+    call :install_trt_rtx_stack
 ) else (
     call :install_nvidia_stack
 )
@@ -73,6 +76,7 @@ if errorlevel 1 exit /b 1
 
 call :smoke_test
 if errorlevel 1 exit /b 1
+call :record_install
 call :done
 exit /b 0
 
@@ -188,29 +192,45 @@ if "!DRIVER_SUPPORTED!"=="0" (
 )
 exit /b 0
 
+:check_previous_install
+set "PREV_RECORD_EXISTS=0"
+set "PREV_MODE="
+set "PREV_OPTION="
+if exist "%~dp0install_record.json" if exist "%VENV_PYTHON%" (
+    for /f "tokens=1,2 delims==" %%A in ('"%VENV_PYTHON%" "%~dp0install_record.py" read 2^>nul') do (
+        if "%%A"=="MODE" set "PREV_MODE=%%B"
+        if "%%A"=="OPTION" set "PREV_OPTION=%%B"
+        set "PREV_RECORD_EXISTS=1"
+    )
+)
+if "!PREV_RECORD_EXISTS!"=="1" (
+    echo Previous installation detected : [!PREV_OPTION!] !PREV_MODE!
+    call :log "Previous install detected: Option !PREV_OPTION!, Mode !PREV_MODE!"
+)
+exit /b 0
+
 :choose_mode
-set "INSTALL_MODE=AUTO"
+set "INSTALL_MODE=NVIDIA"
 set "USER_FORCED_NVIDIA=0"
 echo.
 echo Choose installation mode:
-echo   [A] Auto       - choose NVIDIA for detected RTX GPUs; otherwise CPU
-echo   [N] NVIDIA GPU - force PyTorch CUDA 12.8
-echo   [C] CPU        - safest fallback, including AMD systems because AMD is not supported yet
+echo   [A] CUDA EP         - Choose this for the stable and safe option
+echo   [B] TensorRT-RTX EP - Choose this if you like experimental, fast, and optimized (CUDA EP will still exist as a stable fallback)
+echo   [C] CPU             - safest fallback, including AMD systems because AMD is not supported yet
 if "%HAS_NVIDIA%"=="0" if "%HAS_AMD%"=="1" echo   Note: AMD GPU detected, but AMD acceleration is not supported yet. Auto will use CPU.
 echo.
-call :prompt_choice MODE_CHOICE "Mode [A/N/C, default A]: " "A N C" "A" "A, N, or C"
-if /i "!MODE_CHOICE!"=="N" (
+call :prompt_choice MODE_CHOICE "Mode [A/B/C, default A]: " "A B C" "A" "A, B, or C"
+if /i "!MODE_CHOICE!"=="A" (
     set "INSTALL_MODE=NVIDIA"
+    set "USER_FORCED_NVIDIA=1"
+)
+if /i "!MODE_CHOICE!"=="B" (
+    set "INSTALL_MODE=TENSORRT_RTX"
     set "USER_FORCED_NVIDIA=1"
 )
 if /i "!MODE_CHOICE!"=="C" set "INSTALL_MODE=CPU"
 
-if /i "%INSTALL_MODE%"=="AUTO" (
-    if "%HAS_NVIDIA%"=="1" if "%RTX_SUPPORTED%"=="1" set "INSTALL_MODE=NVIDIA"
-    if /i "!INSTALL_MODE!"=="AUTO" set "INSTALL_MODE=CPU"
-)
-
-if /i "!INSTALL_MODE!"=="NVIDIA" if "%USER_FORCED_NVIDIA%"=="1" (
+if not "!INSTALL_MODE!"=="CPU" if "%USER_FORCED_NVIDIA%"=="1" (
     if "%HAS_NVIDIA%"=="0" call :confirm_risky "NVIDIA was not detected. Force GPU stack installation anyway?"
     if /i "!INSTALL_MODE!"=="CPU" goto :choose_mode_done
     if "%RTX_SUPPORTED%"=="0" call :confirm_risky "The GPU is outside the RTX 20+ target. Force GPU stack installation anyway?"
@@ -283,6 +303,9 @@ if /i "%INSTALL_MODE%"=="CPU" (
     if errorlevel 1 exit /b 1
     set "INSTALL_REQ=%CPU_REQ_FILE%"
 )
+if /i "%INSTALL_MODE%"=="TENSORRT_RTX" (
+    set "INSTALL_REQ=requirements_trt_rtx.txt"
+)
 
 if exist "%~dp0wheels\diffq-0.2.4-cp311-cp311-win_amd64.whl" (
     call :log "Pre-installing local binary wheel for diffq"
@@ -325,7 +348,7 @@ exit /b 0
 
 :install_nvidia_stack
 echo.
-echo Installing NVIDIA CUDA PyTorch stack...
+echo Installing NVIDIA CUDA PyTorch stack (Option A - CUDA EP)...
 call :log "Installing PyTorch CUDA from %TORCH_CU128%"
 uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
 if errorlevel 1 (
@@ -341,9 +364,30 @@ if errorlevel 1 (
 )
 
 echo Installing ONNX Runtime GPU compatibility package...
-uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime >nul 2>&1
+uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime onnxruntime-ep-nv-tensorrt-rtx-cu12 >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" onnxruntime-gpu==1.22.0
 if errorlevel 1 call :warn "Failed to install onnxruntime-gpu. UVR can still use PyTorch CUDA, but ONNX models may fall back or fail."
+exit /b 0
+
+:install_trt_rtx_stack
+echo.
+echo Installing NVIDIA CUDA PyTorch stack (Option B - TensorRT-RTX EP)...
+call :log "Installing PyTorch CUDA from %TORCH_CU128%"
+uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
+if errorlevel 1 (
+    call :warn "PyTorch CUDA installation failed. Offering CPU fallback."
+    call :prompt_choice CPU_FALLBACK "Install CPU stack instead? [Y/N, default Y]: " "Y N" "Y" "Y or N"
+    if /i "!CPU_FALLBACK!"=="N" (
+        call :fail "PyTorch CUDA installation failed and CPU fallback was cancelled."
+        exit /b 1
+    )
+    set "INSTALL_MODE=CPU"
+    call :install_cpu_stack
+    exit /b 0
+)
+
+echo Preparing TensorRT-RTX packages...
+uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime >nul 2>&1
 exit /b 0
 
 :install_cpu_stack
@@ -356,7 +400,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime-gpu >nul 2>&1
+uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime-gpu onnxruntime-ep-nv-tensorrt-rtx-cu12 >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" onnxruntime==1.22.0
 if errorlevel 1 call :warn "Failed to install ONNX Runtime CPU. PyTorch models can still run, but ONNX models may fail."
 exit /b 0
@@ -578,14 +622,29 @@ if errorlevel 1 (
 "%VENV_PYTHON%" -c "import onnxruntime as ort; print('ONNX Runtime providers:', ort.get_available_providers())"
 if errorlevel 1 call :warn "ONNX Runtime smoke test failed. UVR can still run non-ONNX models."
 
-if /i "%INSTALL_MODE%"=="NVIDIA" (
+if /i "%INSTALL_MODE%"=="TENSORRT_RTX" (
+    "%VENV_PYTHON%" -c "import onnxruntime as ort; import onnxruntime_ep_nv_tensorrt_rtx as trt_ep; ort.register_execution_provider_library(trt_ep.get_ep_name(), trt_ep.get_library_path()); print('TensorRT-RTX plugin loaded successfully.')" 2>nul
+    if errorlevel 1 call :warn "TensorRT-RTX EP plugin could not be initialized. CUDA EP will still be used as stable fallback."
+)
+
+if not "%INSTALL_MODE%"=="CPU" (
     "%VENV_PYTHON%" -c "import torch, sys; sys.exit(0 if torch.cuda.is_available() else 2)"
     if errorlevel 1 (
-        call :warn "NVIDIA mode is installed, but torch.cuda.is_available() is still False."
+        call :warn "GPU mode is installed, but torch.cuda.is_available() is still False."
         call :warn "Likely causes: outdated driver, DLL conflict, or incompatible PyTorch wheel."
     )
 )
 exit /b 0
+
+:record_install
+echo.
+echo Recording install state...
+"%VENV_PYTHON%" "%~dp0install_record.py" write --option "!MODE_CHOICE!" --mode "!INSTALL_MODE!" --reuse-venv "!REUSE_VENV!" --has-uv "1" --has-ffmpeg "!HAS_FFMPEG!" --has-rubberband "!HAS_RB!" --has-vc-redist "!VC_INSTALLED!" >nul 2>&1
+if not errorlevel 1 (
+    call :log "Successfully wrote install record to install_record.json"
+)
+exit /b 0
+
 
 :done
 echo.
