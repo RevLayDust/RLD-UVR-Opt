@@ -224,8 +224,8 @@ if "!PREV_RECORD_EXISTS!"=="1" (
     call :log "Previous install detected: Option !PREV_OPTION!, Mode !PREV_MODE!"
 )
 if not "!VENV_TORCH_TYPE!"=="NONE" (
-    echo Current environment stack      : Torch=!VENV_TORCH_TYPE! (!VENV_TORCH_VER!), ORT=!VENV_ORT_TYPE! (!VENV_ORT_VER!)
-    call :log "Current venv stack: Torch !VENV_TORCH_TYPE! (!VENV_TORCH_VER!), ORT !VENV_ORT_TYPE! (!VENV_ORT_VER!)"
+    echo Current environment stack      : Torch=!VENV_TORCH_TYPE! [!VENV_TORCH_VER!], ORT=!VENV_ORT_TYPE! [!VENV_ORT_VER!]
+    call :log "Current venv stack: Torch !VENV_TORCH_TYPE! [!VENV_TORCH_VER!], ORT !VENV_ORT_TYPE! [!VENV_ORT_VER!]"
 )
 exit /b 0
 
@@ -361,7 +361,7 @@ if "%INSTALL_MODE%"=="TENSORRT_RTX" (
     if not "!VENV_ORT_VER!"=="1.24.4" set "NEED_ORT_REPLACE=1"
     if "!NEED_ORT_REPLACE!"=="1" (
         echo.
-        echo [UPGRADE] Transitioning ONNX Runtime stack to TensorRT-RTX (ORT 1.24.4 + TRT-RTX plugin)...
+        echo [UPGRADE] Transitioning ONNX Runtime stack to TensorRT-RTX [ORT 1.24.4 + TRT-RTX plugin]...
         call :log "Stack transition: Switching ORT stack to TensorRT-RTX"
     )
 )
@@ -370,7 +370,7 @@ if "%INSTALL_MODE%"=="NVIDIA" (
     if not "!VENV_ORT_VER!"=="1.22.0" set "NEED_ORT_REPLACE=1"
     if "!NEED_ORT_REPLACE!"=="1" (
         echo.
-        echo [SWITCH] Transitioning ONNX Runtime stack to standard CUDA EP (ORT 1.22.0)...
+        echo [SWITCH] Transitioning ONNX Runtime stack to standard CUDA EP [ORT 1.22.0]...
         call :log "Stack transition: Switching ORT stack to standard CUDA EP"
     )
 )
@@ -380,7 +380,7 @@ if not "%INSTALL_MODE%"=="CPU" (
     if not "!VENV_TORCH_CUDA!"=="12.8" (
         if not "!VENV_TORCH_TYPE!"=="NONE" (
             set "NEED_TORCH_REPLACE=1"
-            echo [UPGRADE] PyTorch CUDA version mismatch (!VENV_TORCH_CUDA! vs 12.8). Replacing with cu128...
+            echo [UPGRADE] PyTorch CUDA version mismatch: !VENV_TORCH_CUDA! vs 12.8. Replacing with cu128...
             call :log "Stack transition: Replacing PyTorch with cu128 due to version mismatch"
         )
     )
