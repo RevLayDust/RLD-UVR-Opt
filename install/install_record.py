@@ -78,6 +78,57 @@ def inspect_installed_packages() -> Dict[str, Any]:
     }
 
 
+def inspect_installed_stack() -> Dict[str, str]:
+    """Inspect current environment to determine Torch build type and ORT variant."""
+    torch_type = "NONE"
+    torch_ver = "NONE"
+    torch_cuda = "NONE"
+    try:
+        import torch
+        torch_ver = str(getattr(torch, "__version__", "NONE"))
+        cuda_val = getattr(torch.version, "cuda", None)
+        if cuda_val is not None:
+            torch_type = "CUDA"
+            torch_cuda = str(cuda_val)
+        elif "+cu" in torch_ver:
+            torch_type = "CUDA"
+            torch_cuda = "UNKNOWN"
+        else:
+            torch_type = "CPU"
+            torch_cuda = "NONE"
+    except Exception:
+        pass
+
+    ort_type = "NONE"
+    ort_ver = "NONE"
+    try:
+        import importlib.metadata
+        installed = {d.metadata["Name"].lower(): d.version for d in importlib.metadata.distributions()}
+        has_trt_plugin = "onnxruntime-ep-nv-tensorrt-rtx-cu12" in installed
+        has_ort_gpu = "onnxruntime-gpu" in installed
+        has_ort_cpu = "onnxruntime" in installed
+
+        if has_ort_gpu and has_trt_plugin:
+            ort_type = "GPU_TRT"
+            ort_ver = installed.get("onnxruntime-gpu", "NONE")
+        elif has_ort_gpu:
+            ort_type = "GPU_CUDA"
+            ort_ver = installed.get("onnxruntime-gpu", "NONE")
+        elif has_ort_cpu:
+            ort_type = "CPU"
+            ort_ver = installed.get("onnxruntime", "NONE")
+    except Exception:
+        pass
+
+    return {
+        "TORCH_TYPE": torch_type,
+        "TORCH_VER": torch_ver,
+        "TORCH_CUDA": torch_cuda,
+        "ORT_TYPE": ort_type,
+        "ORT_VER": ort_ver,
+    }
+
+
 def write_install_record(
     option: str,
     install_mode: str,
@@ -147,6 +198,9 @@ def main() -> int:
     write_p.add_argument("--has-rubberband", default="1", help="Whether rubberband is present (1/0)")
     write_p.add_argument("--has-vc-redist", default="1", help="Whether VC redist is present (1/0)")
 
+    inspect_p = subparsers.add_parser("inspect-stack", help="Inspect current venv stack")
+    inspect_p.add_argument("--json", action="store_true", help="Output raw JSON")
+
     args = parser.parse_args()
 
     if args.action == "read":
@@ -174,6 +228,15 @@ def main() -> int:
             has_vc_redist=args.has_vc_redist == "1",
         )
         print("RECORD_WRITTEN")
+        return 0
+
+    elif args.action == "inspect-stack":
+        stack = inspect_installed_stack()
+        if args.json:
+            print(json.dumps(stack, indent=2))
+        else:
+            for k, v in stack.items():
+                print(f"{k}={v}")
         return 0
 
     parser.print_help()

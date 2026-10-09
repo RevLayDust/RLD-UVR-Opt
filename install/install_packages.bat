@@ -196,6 +196,22 @@ exit /b 0
 set "PREV_RECORD_EXISTS=0"
 set "PREV_MODE="
 set "PREV_OPTION="
+set "VENV_TORCH_TYPE=NONE"
+set "VENV_TORCH_VER=NONE"
+set "VENV_TORCH_CUDA=NONE"
+set "VENV_ORT_TYPE=NONE"
+set "VENV_ORT_VER=NONE"
+
+if exist "%VENV_PYTHON%" (
+    for /f "tokens=1,2 delims==" %%A in ('"%VENV_PYTHON%" "%~dp0install_record.py" inspect-stack 2^>nul') do (
+        if "%%A"=="TORCH_TYPE" set "VENV_TORCH_TYPE=%%B"
+        if "%%A"=="TORCH_VER" set "VENV_TORCH_VER=%%B"
+        if "%%A"=="TORCH_CUDA" set "VENV_TORCH_CUDA=%%B"
+        if "%%A"=="ORT_TYPE" set "VENV_ORT_TYPE=%%B"
+        if "%%A"=="ORT_VER" set "VENV_ORT_VER=%%B"
+    )
+)
+
 if exist "%~dp0install_record.json" if exist "%VENV_PYTHON%" (
     for /f "tokens=1,2 delims==" %%A in ('"%VENV_PYTHON%" "%~dp0install_record.py" read 2^>nul') do (
         if "%%A"=="MODE" set "PREV_MODE=%%B"
@@ -206,6 +222,10 @@ if exist "%~dp0install_record.json" if exist "%VENV_PYTHON%" (
 if "!PREV_RECORD_EXISTS!"=="1" (
     echo Previous installation detected : [!PREV_OPTION!] !PREV_MODE!
     call :log "Previous install detected: Option !PREV_OPTION!, Mode !PREV_MODE!"
+)
+if not "!VENV_TORCH_TYPE!"=="NONE" (
+    echo Current environment stack      : Torch=!VENV_TORCH_TYPE! (!VENV_TORCH_VER!), ORT=!VENV_ORT_TYPE! (!VENV_ORT_VER!)
+    call :log "Current venv stack: Torch !VENV_TORCH_TYPE! (!VENV_TORCH_VER!), ORT !VENV_ORT_TYPE! (!VENV_ORT_VER!)"
 )
 exit /b 0
 
@@ -274,11 +294,19 @@ exit /b 0
 
 :create_venv
 set "VENV_CLEAR="
+set "NEED_TORCH_REPLACE=0"
+set "NEED_ORT_REPLACE=0"
+
 if exist "%VENV_DIR%\Scripts\python.exe" (
     echo Existing virtual environment found: %VENV_DIR%
     call :prompt_choice REUSE_VENV "Reuse existing venv? [Y/N, default Y]: " "Y N" "Y" "Y or N"
-    if /i "!REUSE_VENV!"=="Y" exit /b 0
+    if /i "!REUSE_VENV!"=="Y" (
+        call :check_stack_transition
+        exit /b 0
+    )
     set "VENV_CLEAR=--clear"
+    set "VENV_TORCH_TYPE=NONE"
+    set "VENV_ORT_TYPE=NONE"
 )
 
 echo Creating virtual environment with Python %PYTHON_VERSION%...
@@ -290,6 +318,71 @@ if errorlevel 1 (
     if errorlevel 1 (
         call :fail "Failed to create the venv. Install Python 3.11 first or check uv connectivity."
         exit /b 1
+    )
+)
+exit /b 0
+
+:check_stack_transition
+set "NEED_TORCH_REPLACE=0"
+set "NEED_ORT_REPLACE=0"
+
+rem -- Case 1: Upgrading from CPU to GPU (Option A or Option B)
+if not "%INSTALL_MODE%"=="CPU" if "!VENV_TORCH_TYPE!"=="CPU" (
+    echo.
+    echo ============================================================
+    echo  [UPGRADE] Migrating environment from CPU to %INSTALL_MODE%
+    echo ============================================================
+    echo  Existing CPU PyTorch and ONNX Runtime will be replaced with
+    echo  CUDA-accelerated packages seamlessly.
+    echo ============================================================
+    set "NEED_TORCH_REPLACE=1"
+    set "NEED_ORT_REPLACE=1"
+    call :log "Stack transition: Upgrading from CPU to %INSTALL_MODE%"
+    exit /b 0
+)
+
+rem -- Case 2: Switching from GPU to CPU fallback (Option C)
+if "%INSTALL_MODE%"=="CPU" if "!VENV_TORCH_TYPE!"=="CUDA" (
+    echo.
+    echo ============================================================
+    echo  [SWITCH] Switching environment from GPU to CPU fallback
+    echo ============================================================
+    echo  CUDA packages will be replaced with CPU builds seamlessly.
+    echo ============================================================
+    set "NEED_TORCH_REPLACE=1"
+    set "NEED_ORT_REPLACE=1"
+    call :log "Stack transition: Switching from GPU to CPU fallback"
+    exit /b 0
+)
+
+rem -- Case 3: Switching between GPU options (A <-> B)
+if "%INSTALL_MODE%"=="TENSORRT_RTX" (
+    if not "!VENV_ORT_TYPE!"=="GPU_TRT" set "NEED_ORT_REPLACE=1"
+    if not "!VENV_ORT_VER!"=="1.24.4" set "NEED_ORT_REPLACE=1"
+    if "!NEED_ORT_REPLACE!"=="1" (
+        echo.
+        echo [UPGRADE] Transitioning ONNX Runtime stack to TensorRT-RTX (ORT 1.24.4 + TRT-RTX plugin)...
+        call :log "Stack transition: Switching ORT stack to TensorRT-RTX"
+    )
+)
+if "%INSTALL_MODE%"=="NVIDIA" (
+    if "!VENV_ORT_TYPE!"=="GPU_TRT" set "NEED_ORT_REPLACE=1"
+    if not "!VENV_ORT_VER!"=="1.22.0" set "NEED_ORT_REPLACE=1"
+    if "!NEED_ORT_REPLACE!"=="1" (
+        echo.
+        echo [SWITCH] Transitioning ONNX Runtime stack to standard CUDA EP (ORT 1.22.0)...
+        call :log "Stack transition: Switching ORT stack to standard CUDA EP"
+    )
+)
+
+rem -- Case 4: PyTorch CUDA integrity check (ensure cu128 and not partial/mismatched)
+if not "%INSTALL_MODE%"=="CPU" (
+    if not "!VENV_TORCH_CUDA!"=="12.8" (
+        if not "!VENV_TORCH_TYPE!"=="NONE" (
+            set "NEED_TORCH_REPLACE=1"
+            echo [UPGRADE] PyTorch CUDA version mismatch (!VENV_TORCH_CUDA! vs 12.8). Replacing with cu128...
+            call :log "Stack transition: Replacing PyTorch with cu128 due to version mismatch"
+        )
     )
 )
 exit /b 0
@@ -350,7 +443,15 @@ exit /b 0
 echo.
 echo Installing NVIDIA CUDA PyTorch stack (Option A - CUDA EP)...
 call :log "Installing PyTorch CUDA from %TORCH_CU128%"
-uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
+
+if "!NEED_TORCH_REPLACE!"=="1" (
+    echo [UPGRADE] Replacing existing PyTorch with CUDA 12.8 packages...
+    call :log "Replacing existing PyTorch packages with CUDA 12.8"
+    uv pip uninstall --python "%VENV_PYTHON%" -y torch torchvision torchaudio >nul 2>&1
+    uv pip install --python "%VENV_PYTHON%" --reinstall-package torch --reinstall-package torchvision --reinstall-package torchaudio %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
+) else (
+    uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
+)
 if errorlevel 1 (
     call :warn "PyTorch CUDA installation failed. Offering CPU fallback."
     call :prompt_choice CPU_FALLBACK "Install CPU stack instead? [Y/N, default Y]: " "Y N" "Y" "Y or N"
@@ -363,9 +464,9 @@ if errorlevel 1 (
     exit /b 0
 )
 
-echo Installing ONNX Runtime GPU compatibility package...
+echo Installing ONNX Runtime GPU compatibility package (1.22.0)...
 uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime onnxruntime-ep-nv-tensorrt-rtx-cu12 >nul 2>&1
-uv pip install --python "%VENV_PYTHON%" onnxruntime-gpu==1.22.0
+uv pip install --python "%VENV_PYTHON%" --reinstall-package onnxruntime-gpu onnxruntime-gpu==1.22.0
 if errorlevel 1 call :warn "Failed to install onnxruntime-gpu. UVR can still use PyTorch CUDA, but ONNX models may fall back or fail."
 exit /b 0
 
@@ -373,7 +474,15 @@ exit /b 0
 echo.
 echo Installing NVIDIA CUDA PyTorch stack (Option B - TensorRT-RTX EP)...
 call :log "Installing PyTorch CUDA from %TORCH_CU128%"
-uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
+
+if "!NEED_TORCH_REPLACE!"=="1" (
+    echo [UPGRADE] Replacing existing PyTorch with CUDA 12.8 packages...
+    call :log "Replacing existing PyTorch packages with CUDA 12.8"
+    uv pip uninstall --python "%VENV_PYTHON%" -y torch torchvision torchaudio >nul 2>&1
+    uv pip install --python "%VENV_PYTHON%" --reinstall-package torch --reinstall-package torchvision --reinstall-package torchaudio %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
+) else (
+    uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
+)
 if errorlevel 1 (
     call :warn "PyTorch CUDA installation failed. Offering CPU fallback."
     call :prompt_choice CPU_FALLBACK "Install CPU stack instead? [Y/N, default Y]: " "Y N" "Y" "Y or N"
@@ -386,22 +495,33 @@ if errorlevel 1 (
     exit /b 0
 )
 
-echo Preparing TensorRT-RTX packages...
+echo Preparing TensorRT-RTX packages (ONNX Runtime GPU 1.24.4 + TRT-RTX EP)...
 uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime >nul 2>&1
+uv pip install --python "%VENV_PYTHON%" --reinstall-package onnxruntime-gpu onnxruntime-gpu==1.24.4 onnxruntime-ep-nv-tensorrt-rtx-cu12==0.4.0
+if errorlevel 1 call :warn "Failed to install TensorRT-RTX packages. Standard CUDA EP will still be used as fallback."
 exit /b 0
 
 :install_cpu_stack
 echo.
-echo Installing CPU fallback stack...
+echo Installing CPU fallback stack (Option C - CPU)...
 call :log "Installing PyTorch CPU from %TORCH_CPU%"
-uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CPU%"
+
+if "!NEED_TORCH_REPLACE!"=="1" (
+    echo [SWITCH] Replacing existing PyTorch with CPU packages...
+    call :log "Replacing existing PyTorch packages with CPU packages"
+    uv pip uninstall --python "%VENV_PYTHON%" -y torch torchvision torchaudio >nul 2>&1
+    uv pip install --python "%VENV_PYTHON%" --reinstall-package torch --reinstall-package torchvision --reinstall-package torchaudio %TORCH_PACKAGES% --index-url "%TORCH_CPU%"
+) else (
+    uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CPU%"
+)
 if errorlevel 1 (
     call :fail "Failed to install PyTorch CPU."
     exit /b 1
 )
 
-uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime-gpu onnxruntime-ep-nv-tensorrt-rtx-cu12 >nul 2>&1
-uv pip install --python "%VENV_PYTHON%" onnxruntime==1.22.0
+echo Installing ONNX Runtime CPU package (1.22.0)...
+uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime-gpu onnxruntime-ep-nv-tensorrt-rtx-cu12 cupy-cuda12x cuda-pathfinder polygraphy onnx-graphsurgeon >nul 2>&1
+uv pip install --python "%VENV_PYTHON%" --reinstall-package onnxruntime onnxruntime==1.22.0
 if errorlevel 1 call :warn "Failed to install ONNX Runtime CPU. PyTorch models can still run, but ONNX models may fail."
 exit /b 0
 

@@ -154,6 +154,18 @@ class InstallRecordTests(unittest.TestCase):
             corrupt_path.write_text("{bad json: 123", encoding="utf-8")
             self.assertIsNone(read_install_record(corrupt_path))
 
+    def test_inspect_installed_stack_returns_expected_keys(self):
+        from install.install_record import inspect_installed_stack
+        stack = inspect_installed_stack()
+        self.assertIsInstance(stack, dict)
+        self.assertIn("TORCH_TYPE", stack)
+        self.assertIn("TORCH_VER", stack)
+        self.assertIn("TORCH_CUDA", stack)
+        self.assertIn("ORT_TYPE", stack)
+        self.assertIn("ORT_VER", stack)
+        self.assertIn(stack["TORCH_TYPE"], ("CUDA", "CPU", "NONE"))
+        self.assertIn(stack["ORT_TYPE"], ("GPU_TRT", "GPU_CUDA", "CPU", "NONE"))
+
 
 if __name__ == "__main__":
     unittest.main()
