@@ -234,8 +234,8 @@ set "INSTALL_MODE=NVIDIA"
 set "USER_FORCED_NVIDIA=0"
 echo.
 echo Choose installation mode:
-echo   [A] CUDA EP         - Choose this for the stable and safe option
-echo   [B] TensorRT-RTX EP - Choose this if you like experimental, fast, and optimized (CUDA EP will still exist as a stable fallback)
+echo   [A] CUDA EP         - Choose this for the stable and safe option (RTX 20+ / Turing or newer)
+echo   [B] TensorRT-RTX EP - Choose this if you like experimental, fast, and optimized (Requires RTX 30+ / Ampere; CUDA EP will still exist as a stable fallback)
 echo   [C] CPU             - safest fallback, including AMD systems because AMD is not supported yet
 if "%HAS_NVIDIA%"=="0" if "%HAS_AMD%"=="1" echo   Note: AMD GPU detected, but AMD acceleration is not supported yet. Auto will use CPU.
 echo.
@@ -247,6 +247,10 @@ if /i "!MODE_CHOICE!"=="A" (
 if /i "!MODE_CHOICE!"=="B" (
     set "INSTALL_MODE=TENSORRT_RTX"
     set "USER_FORCED_NVIDIA=1"
+    echo !GPU_NAME! | findstr /i /r "RTX.*20" >nul
+    if not errorlevel 1 (
+        call :warn "Turing architecture (RTX 20-series) does not support TensorRT-RTX EP. UVR will automatically fall back to CUDA EP at runtime."
+    )
 )
 if /i "!MODE_CHOICE!"=="C" set "INSTALL_MODE=CPU"
 
@@ -447,7 +451,7 @@ call :log "Installing PyTorch CUDA from %TORCH_CU128%"
 if "!NEED_TORCH_REPLACE!"=="1" (
     echo [UPGRADE] Replacing existing PyTorch with CUDA 12.8 packages...
     call :log "Replacing existing PyTorch packages with CUDA 12.8"
-    uv pip uninstall --python "%VENV_PYTHON%" -y torch torchvision torchaudio >nul 2>&1
+    uv pip uninstall --python "%VENV_PYTHON%" torch torchvision torchaudio >nul 2>&1
     uv pip install --python "%VENV_PYTHON%" --reinstall-package torch --reinstall-package torchvision --reinstall-package torchaudio %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
 ) else (
     uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
@@ -465,7 +469,7 @@ if errorlevel 1 (
 )
 
 echo Installing ONNX Runtime GPU compatibility package (1.22.0)...
-uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime onnxruntime-ep-nv-tensorrt-rtx-cu12 >nul 2>&1
+uv pip uninstall --python "%VENV_PYTHON%" onnxruntime onnxruntime-ep-nv-tensorrt-rtx-cu12 >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" --reinstall-package onnxruntime-gpu onnxruntime-gpu==1.22.0
 if errorlevel 1 call :warn "Failed to install onnxruntime-gpu. UVR can still use PyTorch CUDA, but ONNX models may fall back or fail."
 exit /b 0
@@ -478,7 +482,7 @@ call :log "Installing PyTorch CUDA from %TORCH_CU128%"
 if "!NEED_TORCH_REPLACE!"=="1" (
     echo [UPGRADE] Replacing existing PyTorch with CUDA 12.8 packages...
     call :log "Replacing existing PyTorch packages with CUDA 12.8"
-    uv pip uninstall --python "%VENV_PYTHON%" -y torch torchvision torchaudio >nul 2>&1
+    uv pip uninstall --python "%VENV_PYTHON%" torch torchvision torchaudio >nul 2>&1
     uv pip install --python "%VENV_PYTHON%" --reinstall-package torch --reinstall-package torchvision --reinstall-package torchaudio %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
 ) else (
     uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CU128%"
@@ -496,7 +500,7 @@ if errorlevel 1 (
 )
 
 echo Preparing TensorRT-RTX packages (ONNX Runtime GPU 1.24.4 + TRT-RTX EP)...
-uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime >nul 2>&1
+uv pip uninstall --python "%VENV_PYTHON%" onnxruntime >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" --reinstall-package onnxruntime-gpu onnxruntime-gpu==1.24.4 onnxruntime-ep-nv-tensorrt-rtx-cu12==0.4.0
 if errorlevel 1 call :warn "Failed to install TensorRT-RTX packages. Standard CUDA EP will still be used as fallback."
 exit /b 0
@@ -509,7 +513,7 @@ call :log "Installing PyTorch CPU from %TORCH_CPU%"
 if "!NEED_TORCH_REPLACE!"=="1" (
     echo [SWITCH] Replacing existing PyTorch with CPU packages...
     call :log "Replacing existing PyTorch packages with CPU packages"
-    uv pip uninstall --python "%VENV_PYTHON%" -y torch torchvision torchaudio >nul 2>&1
+    uv pip uninstall --python "%VENV_PYTHON%" torch torchvision torchaudio >nul 2>&1
     uv pip install --python "%VENV_PYTHON%" --reinstall-package torch --reinstall-package torchvision --reinstall-package torchaudio %TORCH_PACKAGES% --index-url "%TORCH_CPU%"
 ) else (
     uv pip install --python "%VENV_PYTHON%" %TORCH_PACKAGES% --index-url "%TORCH_CPU%"
@@ -520,7 +524,7 @@ if errorlevel 1 (
 )
 
 echo Installing ONNX Runtime CPU package (1.22.0)...
-uv pip uninstall --python "%VENV_PYTHON%" -y onnxruntime-gpu onnxruntime-ep-nv-tensorrt-rtx-cu12 cupy-cuda12x cuda-pathfinder polygraphy onnx-graphsurgeon >nul 2>&1
+uv pip uninstall --python "%VENV_PYTHON%" onnxruntime-gpu onnxruntime-ep-nv-tensorrt-rtx-cu12 cupy-cuda12x cuda-pathfinder polygraphy onnx-graphsurgeon >nul 2>&1
 uv pip install --python "%VENV_PYTHON%" --reinstall-package onnxruntime onnxruntime==1.22.0
 if errorlevel 1 call :warn "Failed to install ONNX Runtime CPU. PyTorch models can still run, but ONNX models may fail."
 exit /b 0
