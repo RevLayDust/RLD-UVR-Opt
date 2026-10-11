@@ -133,15 +133,15 @@ If you prefer to configure your environment manually instead of running `install
 4. **Install Base Dependencies with uv pip**:
     - **For NVIDIA GPU (CUDA)**:
       ```powershell
-      uv pip install -r .\install\requirements.txt
+      uv pip install -r .\install\reqs\requirements.txt
       ```
     - **For NVIDIA GPU (TensorRT-RTX)**
       ```powershell
-      uv pip install -r .\install\requirements_trt_rtx.txt
+      uv pip install -r .\install\reqs\requirements_trt_rtx.txt
       ```
     - **For CPU Only**:
       ```powershell
-      uv pip install -r .\install\requirements_cpu.txt
+      uv pip install -r .\install\reqs\requirements_cpu.txt
       ```
 
 5. **Place External Media Binaries**:
@@ -256,7 +256,7 @@ To isolate the effect of the Execution Provider, the table below compares CUDA E
 > **How to read these numbers**:
 > * The TensorRT-RTX results use **ONNX Runtime 1.24.4**, while the CUDA results in table 1 used ONNX Runtime 1.22.0. Use the same-stack comparison above for a like-for-like view of the Execution Provider itself.
 > * Each result is the mean of **9 measured rounds** after 1 warmup round. The first (warmup) TensorRT-RTX run was slower at **5.40 s (8.95x Realtime)**, so expect a slower first run before the faster steady-state speed.
-> * Only **Overlap 0.75** has been measured for TensorRT-RTX so far. Overlap 0.50 and CPU results are not available for this provider.
+> * Only **Overlap 0.75** has been measured for TensorRT-RTX so far.
 > * TensorRT-RTX is **experimental**. Results are from a single test machine and are not a universal performance guarantee.
 
 > [!NOTE]
