@@ -50,6 +50,23 @@ class TensorRTRTXEngineTests(unittest.TestCase):
                     self.assertNotIn(PROVIDER_TRT_RTX, providers)
                     self.assertIn(PROVIDER_CUDA, providers)
 
+    @mock.patch("torch.cuda.is_available", return_value=True)
+    @mock.patch("torch.cuda.device_count", return_value=1)
+    def test_trt_rtx_architecture_guard_rejects_turing(self, mock_count, mock_cuda_avail):
+        # Turing (RTX 20 series, compute capability 7.5) must be rejected
+        with mock.patch("torch.cuda.get_device_capability", return_value=(7, 5)):
+            with mock.patch("torch.cuda.get_device_name", return_value="NVIDIA GeForce RTX 2080 Ti"):
+                with mock.patch("engine.tensorrt_rtx.environment.is_trt_rtx_installed", return_value=True):
+                    self.assertFalse(is_trt_rtx_available(0))
+
+    @mock.patch("torch.cuda.is_available", return_value=True)
+    @mock.patch("torch.cuda.device_count", return_value=1)
+    def test_trt_rtx_architecture_guard_accepts_ampere_and_newer(self, mock_count, mock_cuda_avail):
+        # Ampere (RTX 30 series, CC 8.6) must be accepted when plugin is installed
+        with mock.patch("torch.cuda.get_device_capability", return_value=(8, 6)):
+            with mock.patch("engine.tensorrt_rtx.environment.is_trt_rtx_installed", return_value=True):
+                self.assertTrue(is_trt_rtx_available(0))
+
     def test_provider_resolution_rules(self):
         # Rule 3: GPU not selected -> returns CPUExecutionProvider
         cpu_providers = get_supported_execution_providers(has_gpu_selected=False)

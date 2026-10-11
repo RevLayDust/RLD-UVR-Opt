@@ -95,11 +95,31 @@ def is_trt_rtx_installed() -> bool:
 
 
 def is_trt_rtx_available(device_id: int = 0) -> bool:
-    """Check whether TensorRT-RTX can genuinely execute on the specified GPU device."""
+    """Check whether TensorRT-RTX can genuinely execute on the specified GPU device.
+
+    TensorRT-RTX requires NVIDIA Ampere architecture (Compute Capability >= 8.0, e.g.
+    GeForce RTX 30-series, RTX 40-series, RTX 50-series). Earlier architectures such
+    as Turing (RTX 20-series, CC 7.5) are unsupported and should use CUDAExecutionProvider.
+    """
     if not torch.cuda.is_available():
         return False
     if device_id < 0 or device_id >= torch.cuda.device_count():
         return False
+
+    # Check CUDA Compute Capability (Ampere or newer required: major >= 8)
+    try:
+        major, minor = torch.cuda.get_device_capability(device_id)
+        if major < 8:
+            gpu_name = torch.cuda.get_device_name(device_id)
+            print(
+                f"[BACKEND] Device {device_id} ({gpu_name}, Compute Capability {major}.{minor}) "
+                f"does not meet TensorRT-RTX hardware requirement (Ampere / CC >= 8.0 required, e.g. RTX 30-series or newer). "
+                f"Falling back to CUDAExecutionProvider."
+            )
+            return False
+    except Exception as exc:
+        print(f"[BACKEND] Warning: Failed to inspect device compute capability: {exc}")
+
     return is_trt_rtx_installed()
 
 
