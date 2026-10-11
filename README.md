@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/latest/python3.11/)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%2F11%20(64--bit)-informational.svg?logo=windows&logoColor=white)](#-installation--prerequisites)
-[![Acceleration: CUDA & CPU](https://img.shields.io/badge/Acceleration-CUDA%20%7C%20CPU-76B900.svg?logo=nvidia&logoColor=white)](#-installation--prerequisites)
+[![Acceleration: CUDA, TensorRT-RTX & CPU](https://img.shields.io/badge/Acceleration-CUDA%20%7C%20TensorRT--RTX%20%7C%20CPU-76B900.svg?logo=nvidia&logoColor=white)](#-installation--prerequisites)
 
 **High-performance, memory-optimized distribution of Ultimate Vocal Remover GUI (UVR v5.6).**  
 Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, and faster CLI startup.
@@ -19,7 +19,9 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 />
 <br/>
 
-## Up to ~4x Faster Inference &nbsp;|&nbsp; ~53% Lower VRAM Usage
+## Up to ~5.3x Faster Inference &nbsp;|&nbsp; ~77% Lower VRAM Usage
+
+<sub>*~3.5x faster & ~52% lower VRAM on stable CUDA EP. Up to ~5.3x faster & ~77% lower VRAM with experimental TensorRT-RTX EP (see [Verified Benchmarks](#verified-benchmarks)).*</sub>
 
 [Prerequisites & Installation](#installation--prerequisites) $\cdot$ [Usage & Quick Start](#usage--quick-start) $\cdot$ [Key Features](#key-features) $\cdot$ [Verified Benchmarks](#verified-benchmarks) $\cdot$ [Roadmap](#roadmap) $\cdot$ [Credits](#credits--acknowledgments)
 
@@ -34,9 +36,11 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 > **Platform Support**: RLD UVR-Opt is actively tested and optimized exclusively for **Windows 10 / 11 (64-bit)**.
 
 * **Compute Device**:
-  * **NVIDIA GPU (CUDA)**: NVIDIA GeForce RTX 20 Series GPU or higher with at least 6GB VRAM is the minimum requirement for GPU conversions (**8GB+ VRAM recommended for optimal performance**).
+  * **NVIDIA GPU (CUDA EP - Stable)**: NVIDIA GeForce RTX 20 Series (Turing) or higher with at least 6GB VRAM (**8GB+ VRAM recommended for optimal performance**).
+  * **NVIDIA GPU (TensorRT-RTX EP - Experimental)**: NVIDIA GeForce RTX 30 Series (Ampere) or higher (RTX 30, 40, 50 series, RTX Ada/Blackwell).
+    *(Note: Turing / RTX 20-series GPUs are not supported by the TensorRT-RTX execution provider; RTX 20 users should use the stable CUDA EP).*
   * **CPU**: Multi-core modern 64-bit x86 processor (fully supported via multi-threaded CPU inference).
-  * *(Note: Hardware focus is strictly on **CUDA** and **CPU**).*
+  * *(Note: Hardware focus is strictly on **GPU** and **CPU**).*
 * **Python**: **Optional** (the automated installer automatically bootstraps a standalone Python 3.11 environment via `uv`). Installing system **Python 3.11+ (64-bit)** is only required if you plan on manual setup, development, or debugging.
 
 ### 2. Model & Architecture Scope
@@ -72,9 +76,19 @@ Simply double-click `install\install_packages.bat` in File Explorer, or run in t
 
 1. Open UVR using `run_uvr.bat` or `python UVR.py`.
 2. Go to **Main Settings** (to the left of the **Start Processing** button with the wrench icon) → **Additional Settings** → Change **GPU Device** from the default setting to your GPU using the dropdown menu.
-3. Go back to the main menu, then enable **GPU Conversions**.
-4. Re-open UVR.
-5. Done! You can now start using it!
+3. Still in **Additional Settings**, choose an **Execution Provider** (directly below **GPU Device**):
+   * The **Execution Provider** dropdown stays locked (greyed out) until a **GPU Device** has been selected in step 2.
+   * Once unlocked, UVR lists only the providers that are actually available for your GPU:
+     * `CUDAExecutionProvider` — default and stable baseline for all supported NVIDIA GPUs (RTX 20 series / Turing and newer).
+     * `NvTensorRTRTXExecutionProvider` — experimental and faster. Requires **NVIDIA RTX 30 series (Ampere) or newer**. It is only listed if you chose the **TensorRT-RTX EP** option in the installer and your GPU meets the hardware requirement (Turing / RTX 20 series users should select `CUDAExecutionProvider`).
+   * If your installation only supports `CPUExecutionProvider`, both **GPU Device** and **Execution Provider** are hidden and disabled.
+
+   > [!IMPORTANT]
+   > **You MUST restart UVR every time you change the Execution Provider.** The provider is applied when UVR starts, so a change made while UVR is running does not take effect until you restart. Use the **Restart Application** button in the settings menu, or close and re-open UVR.
+
+4. Go back to the main menu, then enable **GPU Conversions**.
+5. Re-open UVR.
+6. Done! You can now start using it!
 
 If you installed the **CPU version**, simply launch UVR using `run_uvr.bat`, `python UVR.py`, or by double-clicking `run_uvr.bat` in File Explorer.
 
@@ -117,9 +131,13 @@ If you prefer to configure your environment manually instead of running `install
      ```
 
 4. **Install Base Dependencies with uv pip**:
-    - **For NVIDIA GPU**:
+    - **For NVIDIA GPU (CUDA)**:
       ```powershell
       uv pip install -r .\install\requirements.txt
+      ```
+    - **For NVIDIA GPU (TensorRT-RTX)**
+      ```powershell
+      uv pip install -r .\install\requirements_trt_rtx.txt
       ```
     - **For CPU Only**:
       ```powershell
@@ -147,18 +165,47 @@ python UVR.py
 ```
 
 ### B. UVR Command-Line Interface (UVR-CLI)
-RLD UVR-Opt provides a dedicated, lightweight CLI designed for automation and headless environments:
+RLD UVR-Opt provides a dedicated, lightweight CLI designed for automation and headless environments. Run it with the project's virtual environment:
 
 ```powershell
 # 1. View all available commands instantly
-uvr_cli --help
+venv\Scripts\python.exe -m uvr_cli --help
 
-# 2. Run high-performance separation with MDX-Net Inst_HQ_4
-uvr_cli run --audio "path/to/song.wav" --model "UVR-MDX-NET-Inst_HQ_4.onnx" --output "output_stems"
+# 2. List installed models
+venv\Scripts\python.exe -m uvr_cli list-models
 
-# 3. High-throughput separation with custom overlap and segment size
-uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --overlap 0.50 --segment-size 4000 -o "output_stems"
+# 3. Run high-performance separation with MDX-Net Inst_HQ_4 (default device: cuda:0)
+venv\Scripts\python.exe -m uvr_cli run --audio "path/to/song.wav" --model "UVR-MDX-NET-Inst_HQ_4.onnx" --output-dir "output_stems"
+
+# 4. High-throughput separation with custom overlap and segment size
+venv\Scripts\python.exe -m uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --overlap 0.50 --segment-size 4000 -o "output_stems"
+
+# 5. Choose the execution device: CUDA, TensorRT-RTX, or CPU
+venv\Scripts\python.exe -m uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --device cuda:0
+venv\Scripts\python.exe -m uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --device trt_rtx:0
+venv\Scripts\python.exe -m uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --device cpu
+
+# 6. Benchmark and smoke test
+venv\Scripts\python.exe -m uvr_cli bench -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx" --device trt_rtx:0 --rounds 3 --warmup 1
+venv\Scripts\python.exe -m uvr_cli smoke-test --device cuda:0
 ```
+
+| Command | Description |
+| :--- | :--- |
+| `list-models` | List all installed MDX-Net, VR, and Demucs models. |
+| `run` | Separate an audio file without the GUI. |
+| `bench` | Run a multi-round benchmark with hardware telemetry and JSON/CSV export. |
+| `smoke-test` | Run an end-to-end check using generated synthetic audio. |
+
+**Device selection (`--device` / `-d`)** is available on `run`, `bench`, and `smoke-test`:
+
+| Value | Execution Provider | Notes |
+| :--- | :--- | :--- |
+| `cuda[:N]` | `CUDAExecutionProvider` | Default (`cuda:0`). Stable choice for all NVIDIA GPUs (RTX 20+ / Turing or newer). |
+| `trt_rtx[:N]` | `NvTensorRTRTXExecutionProvider` | Experimental. Requires the TensorRT-RTX EP install option and an **RTX 30-series (Ampere) or newer** GPU. Automatically falls back to CUDA EP if unavailable or on Turing (RTX 20) GPUs. |
+| `cpu` | `CPUExecutionProvider` | Runs without a GPU. |
+
+An invalid value is rejected with an error that lists the valid choices. If CUDA is unavailable, the CLI falls back to CPU and prints a warning. See [`uvr_cli/README.md`](uvr_cli/README.md) for the full option reference.
 
 ---
 
@@ -191,8 +238,29 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 | :--- | :--- | :---: | :---: | :---: |
 | **Overlap 0.50**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak System RAM** | 79.84 s<br>0.61x Realtime<br>8,928 MB | **32.17 s**<br>**1.50x Realtime**<br>**3,210 MB** | **~2.48x Faster**<br>+146% Throughput<br>**-64.0% RAM Usage (5.7 GB Saved)** |
 
+### 3. GPU Inference Performance (TensorRT-RTX EP, Experimental)
+
+Same audio, model, and settings as above (**Overlap 0.75**, Segment 4000, Ultra Quality FP32), comparing UVR v5.6 (Legacy) against RLD UVR-Opt running on the **TensorRT-RTX Execution Provider**.
+
+| Configuration | Metric | UVR v5.6 (Legacy) | RLD UVR-Opt (TensorRT-RTX) | Improvement |
+| :--- | :--- | :---: | :---: | :---: |
+| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM**<br>PyTorch VRAM Alloc | 13.52 s<br>3.58x Realtime<br>8,210 MB<br>6,360 MB | **2.55 s**<br>**18.94x Realtime**<br>**1,897 MB**<br>**177.5 MB** | **~5.3x Faster**<br>+429% Throughput<br>**-76.9% VRAM Usage (6.2 GB Saved)**<br>-97.2% PyTorch VRAM Allocation |
+
+To isolate the effect of the Execution Provider, the table below compares CUDA EP and TensorRT-RTX EP **on the same software stack** (ONNX Runtime 1.24.4, same machine, same commit):
+
+| Configuration | Metric | RLD UVR-Opt (CUDA EP) | RLD UVR-Opt (TensorRT-RTX EP) | Improvement |
+| :--- | :--- | :---: | :---: | :---: |
+| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM** | 3.60 s<br>13.44x Realtime<br>3,755 MB | **2.55 s**<br>**18.94x Realtime**<br>**1,897 MB** | **~1.41x Faster**<br>+41% Throughput<br>**-49.5% VRAM Usage** |
+
 > [!NOTE]
-> Raw per-round session logs and metric datasets are preserved in [`benchmark_results/`](benchmark_results/) (`summary.csv` and `summary_legacy.csv`).
+> **How to read these numbers**:
+> * The TensorRT-RTX results use **ONNX Runtime 1.24.4**, while the CUDA results in table 1 used ONNX Runtime 1.22.0. Use the same-stack comparison above for a like-for-like view of the Execution Provider itself.
+> * Each result is the mean of **9 measured rounds** after 1 warmup round. The first (warmup) TensorRT-RTX run was slower at **5.40 s (8.95x Realtime)**, so expect a slower first run before the faster steady-state speed.
+> * Only **Overlap 0.75** has been measured for TensorRT-RTX so far. Overlap 0.50 and CPU results are not available for this provider.
+> * TensorRT-RTX is **experimental**. Results are from a single test machine and are not a universal performance guarantee.
+
+> [!NOTE]
+> Raw per-round session logs and metric datasets are preserved in [`benchmark_results/`](benchmark_results/) (`summary.csv` and `summary_legacy.csv`). The TensorRT-RTX run is session `session_20261010_123555_d732c2`, and the same-stack CUDA run is session `session_20261010_123503_8cf4dd`.
 
 ---
 
@@ -200,8 +268,8 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 - [x] Accelerated ONNX inference pipeline and buffer optimizations.
 - [x] In-memory `FP16` downcasting (e.g., `FP32` $\rightarrow$ `FP16`) and cache lifecycle management.
+- [x] **TensorRT-RTX Execution Provider (via ONNX Runtime)**: Evaluate optional acceleration for NVIDIA RTX GPUs (Ampere+), with CUDA EP retained as the stable fallback.
 - [ ] In-memory `BF16`/`FP8 E4M3FN` downcasting.
-- [ ] **TensorRT-RTX Execution Provider (via ONNX Runtime)**: Evaluate optional acceleration for NVIDIA RTX GPUs (Ampere+), with CUDA EP retained as the stable fallback.
 - [ ] **Windows ML Execution Provider (via ONNX Runtime)**: Evaluate acceleration path for non-NVIDIA hardware (AMD, Intel) on Windows 11 (24H2+).
 - [ ] Support for Newer Model Architectures.
 - [ ] UI/UX Overhaul.

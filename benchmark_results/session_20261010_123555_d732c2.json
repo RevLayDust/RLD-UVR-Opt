@@ -1,0 +1,334 @@
+{
+  "audio_info": {
+    "channels": 2,
+    "duration_sec": 48.3357,
+    "file_name": "sample.wav",
+    "format": "WAV",
+    "samplerate": 48000,
+    "size_bytes": 9280542,
+    "subtype": "PCM_16"
+  },
+  "git_commit": "b21faacf8516b1d66355d4f9bbeba67884ee3ad1",
+  "input_hash": "d18f442363660adc6d24137ff33024e4b67de61948cff280e065f7a8e4f6e08c",
+  "model_info": {
+    "backend": "MDX-Net",
+    "batch_size": 1,
+    "device": "trt_rtx:0",
+    "hash": "6adec0d7071e8370978d8940f6a4cef3",
+    "name": "UVR-MDX-NET-Inst_HQ_4.onnx",
+    "overlap": 0.75,
+    "precision": "Ultra Quality (FP32)",
+    "segment_size": 4000
+  },
+  "python_version": "3.11.9",
+  "runs": [
+    {
+      "is_valid": true,
+      "is_warmup": true,
+      "iteration": 1,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 1,
+      "speed_factor_rt": 8.95,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 26.08,
+        "avg_power_watts": 43.25,
+        "avg_process_cpu_percent": 277.23,
+        "avg_system_cpu_percent": 25.07,
+        "baseline_device_vram_mb": 1024.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 134.06,
+        "peak_process_cpu_percent": 840.1,
+        "peak_process_ram_mb": 1550.32,
+        "peak_system_cpu_percent": 70.5,
+        "samples_count": 78,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 5.4005
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 2,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 1,
+      "speed_factor_rt": 18.87,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 77.42,
+        "avg_power_watts": 114.91,
+        "avg_process_cpu_percent": 567.53,
+        "avg_system_cpu_percent": 49.75,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 133.73,
+        "peak_process_cpu_percent": 698.1,
+        "peak_process_ram_mb": 1585.23,
+        "peak_system_cpu_percent": 56.2,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5614
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 3,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 2,
+      "speed_factor_rt": 18.9,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 76.5,
+        "avg_power_watts": 113.29,
+        "avg_process_cpu_percent": 566.14,
+        "avg_system_cpu_percent": 48.52,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 133.69,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1585.41,
+        "peak_system_cpu_percent": 58.1,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5574
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 4,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 3,
+      "speed_factor_rt": 18.94,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 75.42,
+        "avg_power_watts": 113.42,
+        "avg_process_cpu_percent": 567.89,
+        "avg_system_cpu_percent": 48.46,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 134.63,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1595.93,
+        "peak_system_cpu_percent": 55.0,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.552
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 5,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 4,
+      "speed_factor_rt": 18.86,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 79.96,
+        "avg_power_watts": 112.06,
+        "avg_process_cpu_percent": 570.8,
+        "avg_system_cpu_percent": 48.87,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 135.04,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1586.1,
+        "peak_system_cpu_percent": 55.6,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5635
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 6,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 5,
+      "speed_factor_rt": 18.95,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 76.92,
+        "avg_power_watts": 114.88,
+        "avg_process_cpu_percent": 565.32,
+        "avg_system_cpu_percent": 48.45,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 135.04,
+        "peak_process_cpu_percent": 698.1,
+        "peak_process_ram_mb": 1587.48,
+        "peak_system_cpu_percent": 55.2,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5513
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 7,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 6,
+      "speed_factor_rt": 19.01,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 74.58,
+        "avg_power_watts": 114.42,
+        "avg_process_cpu_percent": 568.31,
+        "avg_system_cpu_percent": 48.36,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 135.28,
+        "peak_process_cpu_percent": 698.1,
+        "peak_process_ram_mb": 1599.89,
+        "peak_system_cpu_percent": 53.4,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5432
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 8,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 7,
+      "speed_factor_rt": 19.02,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 82.31,
+        "avg_power_watts": 113.79,
+        "avg_process_cpu_percent": 566.15,
+        "avg_system_cpu_percent": 48.75,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 134.69,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1599.05,
+        "peak_system_cpu_percent": 57.5,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5411
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 9,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 8,
+      "speed_factor_rt": 18.91,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 77.69,
+        "avg_power_watts": 115.99,
+        "avg_process_cpu_percent": 564.57,
+        "avg_system_cpu_percent": 49.31,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 134.81,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1586.12,
+        "peak_system_cpu_percent": 57.6,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5563
+    },
+    {
+      "is_valid": true,
+      "is_warmup": false,
+      "iteration": 10,
+      "output_stems": [
+        "sample_(Instrumental).wav",
+        "sample_(Vocals).wav"
+      ],
+      "round": 9,
+      "speed_factor_rt": 18.96,
+      "telemetry": {
+        "avg_gpu_utilization_percent": 73.54,
+        "avg_power_watts": 114.47,
+        "avg_process_cpu_percent": 571.72,
+        "avg_system_cpu_percent": 48.2,
+        "baseline_device_vram_mb": 1622.58,
+        "peak_device_vram_mb": 1896.58,
+        "peak_gpu_utilization_percent": 97.0,
+        "peak_power_watts": 135.5,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1599.05,
+        "peak_system_cpu_percent": 54.8,
+        "samples_count": 26,
+        "torch_peak_allocated_vram_mb": 177.49,
+        "torch_peak_reserved_vram_mb": 274.0
+      },
+      "total_time_sec": 2.5497
+    }
+  ],
+  "session_id": "session_20261010_123555_d732c2",
+  "summary": {
+    "avg_speed_factor_rt": 18.94,
+    "avg_total_time_sec": 2.5529,
+    "max_total_time_sec": 2.5635,
+    "min_total_time_sec": 2.5411,
+    "peak_device_vram_mb": 1896.58,
+    "peak_torch_allocated_vram_mb": 177.49,
+    "rounds_measured": 9,
+    "warmup_rounds": 1
+  },
+  "system_info": {
+    "cpu": "AMD Ryzen 5 5600 6-Core Processor",
+    "cpu_count_logical": 12,
+    "cpu_count_physical": 6,
+    "cpu_name": "AMD Ryzen 5 5600 6-Core Processor",
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "driver_version": "617.14",
+    "gpu_name": "NVIDIA GeForce RTX 5060 Ti",
+    "onnxruntime_version": "1.24.4",
+    "os": "Windows-10-10.0.26100-SP0",
+    "python_version": "3.11.9",
+    "system_ram_gb": 31.93,
+    "torch_version": "2.11.0+cu128",
+    "total_gpu_vram_mb": 16311.0
+  },
+  "timestamp_utc": "2026-10-10T12:36:28.549515+00:00"
+}
