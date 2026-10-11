@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 RevLayDust
+
 """Machine-readable JSON and CSV exporters for UVR benchmarks with privacy sanitization."""
 
 from __future__ import annotations

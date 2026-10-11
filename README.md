@@ -300,12 +300,19 @@ To isolate the effect of the Execution Provider, the table below compares CUDA E
 
 ## License & References
 
-The **Ultimate Vocal Remover GUI** and **RLD UVR-Opt** codebase is open-source and released under the [**MIT License**](LICENSE).
+The **Ultimate Vocal Remover GUI** and **RLD UVR-Opt** core distribution is open-source and released under the [**MIT License**](LICENSE).
 
 ```text
 Copyright (c) 2022 Ultimate Vocal Remover
 Copyright (c) 2026 RevLayDust
 ```
+
+The CLI and benchmarking suite ([`uvr_cli`](uvr_cli/)) is released under the [**GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)**](uvr_cli/LICENSE).
+
+```text
+Copyright (C) 2026 RevLayDust
+```
+
 
 ### Academic References
 * [1] Takahashi et al., *"Multi-scale Multi-band DenseNets for Audio Source Separation"*, [arXiv:1706.09588](https://arxiv.org/pdf/1706.09588.pdf)

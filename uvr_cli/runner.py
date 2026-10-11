@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 RevLayDust
+
 """Headless inference runner bridging directly to UVR's separate.py backends."""
 
 from __future__ import annotations

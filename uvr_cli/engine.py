@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 RevLayDust
+
 """Benchmarking engine managing warmup, measurement rounds, timing, and export."""
 
 from __future__ import annotations

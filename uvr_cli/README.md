@@ -205,3 +205,15 @@ Columns included in the CSV summary:
 
 ### 2. Structured JSON (`benchmark_results/<session_id>.json`)
 Contains the full system hardware report, audio metadata, model configuration parameters, individual per-round telemetry profiles, and aggregated statistics (mean, min, max).
+
+---
+
+## License
+
+The **Ultimate Vocal Remover CLI & Performance Benchmark Suite (`uvr_cli`)** is open-source and released under the [**GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)**](LICENSE).
+
+```text
+Copyright (C) 2026 RevLayDust
+```
+
+This guarantees copyleft protection, software freedom, and source-code availability across CLI operations and network-interactive environments while linking with the core UVR engine backends.

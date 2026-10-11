@@ -416,6 +416,34 @@ class BenchmarkCLITests(unittest.TestCase):
         self.assertEqual(res.output_files, sample_paths)
         self.assertTrue(res.is_valid)
 
+    def test_uvr_cli_license_file_exists_and_valid(self):
+        """Verify that uvr_cli/LICENSE exists and contains GNU AGPL v3 text with copyright notice."""
+        license_path = Path(__file__).resolve().parent.parent / "uvr_cli" / "LICENSE"
+        self.assertTrue(license_path.is_file(), "uvr_cli/LICENSE must exist")
+        content = license_path.read_text(encoding="utf-8")
+        self.assertIn("GNU AFFERO GENERAL PUBLIC LICENSE", content)
+        self.assertIn("Version 3", content)
+        self.assertIn("Copyright (C) 2026 RevLayDust", content)
+
+    def test_uvr_cli_source_files_contain_spdx_headers(self):
+        """Verify that every python module in uvr_cli includes SPDX and copyright headers."""
+        pkg_dir = Path(__file__).resolve().parent.parent / "uvr_cli"
+        py_files = list(pkg_dir.glob("*.py"))
+        self.assertGreater(len(py_files), 0, "Should find python files in uvr_cli package")
+
+        for py_file in py_files:
+            content = py_file.read_text(encoding="utf-8")
+            self.assertIn(
+                "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                content,
+                f"Missing SPDX header in {py_file.name}",
+            )
+            self.assertIn(
+                "# Copyright (C) 2026 RevLayDust",
+                content,
+                f"Missing copyright notice in {py_file.name}",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 RevLayDust
+
 """Command-Line Interface for UVR CLI-Only inference and performance benchmarking."""
 
 from __future__ import annotations

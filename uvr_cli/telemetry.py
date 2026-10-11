@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 RevLayDust
+
 """Hardware telemetry and performance monitoring for UVR benchmarks.
 
 Provides background resource sampling (CPU, GPU, VRAM, Power) and system

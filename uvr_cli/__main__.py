@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 RevLayDust
+
 """Package entry point allowing execution via `python -m uvr_cli`."""
 
 from uvr_cli.cli import main

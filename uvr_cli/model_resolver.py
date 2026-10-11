@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 RevLayDust
+
 """Model resolution and headless configuration adapter for UVR models.
 
 Discovers models, computes UVR MD5 hashes, parses model configurations,
