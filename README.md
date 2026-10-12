@@ -229,14 +229,13 @@ All metrics were gathered using the built-in isolated benchmark suite on identic
 
 | Configuration | Metric | UVR v5.6 (Legacy) | RLD UVR-Opt | Improvement |
 | :--- | :--- | :---: | :---: | :---: |
-| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM**<br>PyTorch VRAM Alloc | 13.52 s<br>3.58x Realtime<br>8,210 MB<br>6,360 MB | **3.85 s**<br>**12.54x Realtime**<br>**3,941 MB**<br>**177.5 MB** | **~3.5x Faster**<br>+250% Throughput<br>**-52.0% VRAM Usage (4.2 GB Saved)**<br>-97.2% PyTorch VRAM Allocation |
-| **Overlap 0.50**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM** | 7.99 s<br>6.05x Realtime<br>8,214 MB | **2.06 s**<br>**23.44x Realtime**<br>**3,893 MB** | **~3.87x Faster**<br>+287% Throughput<br>**-52.6% VRAM Usage (4.3 GB Saved)** |
+| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM**<br>PyTorch VRAM Alloc | 13.54 s<br>3.57x Realtime<br>8,043 MB<br>7,049 MB | **3.60 s**<br>**13.44x Realtime**<br>**3,816 MB**<br>**177.5 MB** | **~3.76x Faster**<br>+276% Throughput<br>**-52.6% VRAM Usage (4.1 GB Saved)**<br>-97.5% PyTorch VRAM Allocation |
 
 ### 2. CPU Inference Performance
 
 | Configuration | Metric | UVR v5.6 (Legacy) | RLD UVR-Opt | Improvement |
 | :--- | :--- | :---: | :---: | :---: |
-| **Overlap 0.50**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak System RAM** | 79.84 s<br>0.61x Realtime<br>8,928 MB | **32.17 s**<br>**1.50x Realtime**<br>**3,210 MB** | **~2.48x Faster**<br>+146% Throughput<br>**-64.0% RAM Usage (5.7 GB Saved)** |
+| **Overlap 0.50**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak System RAM** | 77.56 s<br>0.62x Realtime<br>8,890 MB | **27.60 s**<br>**1.75x Realtime**<br>**3,238 MB** | **~2.81x Faster**<br>+180% Throughput<br>**-63.6% RAM Usage (5.5 GB Saved)** |
 
 ### 3. GPU Inference Performance (TensorRT-RTX EP, Experimental)
 
@@ -244,23 +243,23 @@ Same audio, model, and settings as above (**Overlap 0.75**, Segment 4000, Ultra 
 
 | Configuration | Metric | UVR v5.6 (Legacy) | RLD UVR-Opt (TensorRT-RTX) | Improvement |
 | :--- | :--- | :---: | :---: | :---: |
-| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM**<br>PyTorch VRAM Alloc | 13.52 s<br>3.58x Realtime<br>8,210 MB<br>6,360 MB | **2.55 s**<br>**18.94x Realtime**<br>**1,897 MB**<br>**177.5 MB** | **~5.3x Faster**<br>+429% Throughput<br>**-76.9% VRAM Usage (6.2 GB Saved)**<br>-97.2% PyTorch VRAM Allocation |
+| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM**<br>PyTorch VRAM Alloc | 13.54 s<br>3.57x Realtime<br>8,043 MB<br>7,049 MB | **2.56 s**<br>**18.91x Realtime**<br>**1,956 MB**<br>**177.5 MB** | **~5.3x Faster**<br>+429% Throughput<br>**-75.7% VRAM Usage (5.9 GB Saved)**<br>-97.5% PyTorch VRAM Allocation |
 
 To isolate the effect of the Execution Provider, the table below compares CUDA EP and TensorRT-RTX EP **on the same software stack** (ONNX Runtime 1.24.4, same machine, same commit):
 
 | Configuration | Metric | RLD UVR-Opt (CUDA EP) | RLD UVR-Opt (TensorRT-RTX EP) | Improvement |
 | :--- | :--- | :---: | :---: | :---: |
-| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM** | 3.60 s<br>13.44x Realtime<br>3,755 MB | **2.55 s**<br>**18.94x Realtime**<br>**1,897 MB** | **~1.41x Faster**<br>+41% Throughput<br>**-49.5% VRAM Usage** |
+| **Overlap 0.75**<br>*(Segment: 4000)* | **Inference Time**<br>**Processing Speed**<br>**Peak Device VRAM** | 3.60 s<br>13.44x Realtime<br>3,816 MB | **2.56 s**<br>**18.91x Realtime**<br>**1,956 MB** | **~1.41x Faster**<br>+41% Throughput<br>**-48.7% VRAM Usage** |
 
 > [!NOTE]
 > **How to read these numbers**:
-> * The TensorRT-RTX results use **ONNX Runtime 1.24.4**, while the CUDA results in table 1 used ONNX Runtime 1.22.0. Use the same-stack comparison above for a like-for-like view of the Execution Provider itself.
-> * Each result is the mean of **9 measured rounds** after 1 warmup round. The first (warmup) TensorRT-RTX run was slower at **5.40 s (8.95x Realtime)**, so expect a slower first run before the faster steady-state speed.
+> * Both CUDA and TensorRT-RTX results reflect the updated software stack (ONNX Runtime 1.24.4). Table 4 provides a direct same-stack comparison isolating the Execution Provider itself.
+> * Each result is the mean of **9 measured rounds** after 1 warmup round (CPU: 4 measured rounds after 1 warmup round). The first (warmup) TensorRT-RTX run was slower at **5.73 s (8.44x Realtime)**, so expect a slower first run before the faster steady-state speed.
 > * Only **Overlap 0.75** has been measured for TensorRT-RTX so far.
 > * TensorRT-RTX is **experimental**. Results are from a single test machine and are not a universal performance guarantee.
 
 > [!NOTE]
-> Raw per-round session logs and metric datasets are preserved in [`benchmark_results/`](benchmark_results/) (`summary.csv` and `summary_legacy.csv`). The TensorRT-RTX run is session `session_20261010_123555_d732c2`, and the same-stack CUDA run is session `session_20261010_123503_8cf4dd`.
+> Raw per-round session logs and metric datasets are preserved in [`benchmark_results/`](benchmark_results/) (`summary.csv` and `summary_legacy.csv`). The TensorRT-RTX run is session `session_20261012_112543_5611a8`, the same-stack CUDA run is session `session_20261012_112432_819a12`, the CPU run is session `session_20261012_112714_85d42d`, and the legacy baseline is session `legacy_20261012_184105_0a7fba`.
 
 ---
 

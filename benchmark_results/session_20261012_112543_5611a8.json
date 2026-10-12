@@ -8,7 +8,7 @@
     "size_bytes": 9280542,
     "subtype": "PCM_16"
   },
-  "git_commit": "b21faacf8516b1d66355d4f9bbeba67884ee3ad1",
+  "git_commit": "99497746088b0f8f725988426090df79d3b3b535",
   "input_hash": "d18f442363660adc6d24137ff33024e4b67de61948cff280e065f7a8e4f6e08c",
   "model_info": {
     "backend": "MDX-Net",
@@ -31,24 +31,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 1,
-      "speed_factor_rt": 8.95,
+      "speed_factor_rt": 8.44,
       "telemetry": {
-        "avg_gpu_utilization_percent": 26.08,
-        "avg_power_watts": 43.25,
-        "avg_process_cpu_percent": 277.23,
-        "avg_system_cpu_percent": 25.07,
-        "baseline_device_vram_mb": 1024.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 23.32,
+        "avg_power_watts": 41.53,
+        "avg_process_cpu_percent": 290.88,
+        "avg_system_cpu_percent": 25.98,
+        "baseline_device_vram_mb": 1083.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 134.06,
-        "peak_process_cpu_percent": 840.1,
-        "peak_process_ram_mb": 1550.32,
-        "peak_system_cpu_percent": 70.5,
-        "samples_count": 78,
+        "peak_power_watts": 133.08,
+        "peak_process_cpu_percent": 738.6,
+        "peak_process_ram_mb": 1604.12,
+        "peak_system_cpu_percent": 68.6,
+        "samples_count": 79,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 5.4005
+      "total_time_sec": 5.7298
     },
     {
       "is_valid": true,
@@ -61,22 +61,22 @@
       "round": 1,
       "speed_factor_rt": 18.87,
       "telemetry": {
-        "avg_gpu_utilization_percent": 77.42,
-        "avg_power_watts": 114.91,
-        "avg_process_cpu_percent": 567.53,
-        "avg_system_cpu_percent": 49.75,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
-        "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 133.73,
-        "peak_process_cpu_percent": 698.1,
-        "peak_process_ram_mb": 1585.23,
-        "peak_system_cpu_percent": 56.2,
+        "avg_gpu_utilization_percent": 82.77,
+        "avg_power_watts": 114.68,
+        "avg_process_cpu_percent": 568.73,
+        "avg_system_cpu_percent": 48.8,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
+        "peak_gpu_utilization_percent": 96.0,
+        "peak_power_watts": 134.0,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1639.05,
+        "peak_system_cpu_percent": 56.5,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5614
+      "total_time_sec": 2.5611
     },
     {
       "is_valid": true,
@@ -87,24 +87,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 2,
-      "speed_factor_rt": 18.9,
+      "speed_factor_rt": 18.96,
       "telemetry": {
         "avg_gpu_utilization_percent": 76.5,
-        "avg_power_watts": 113.29,
-        "avg_process_cpu_percent": 566.14,
-        "avg_system_cpu_percent": 48.52,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
-        "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 133.69,
-        "peak_process_cpu_percent": 705.6,
-        "peak_process_ram_mb": 1585.41,
-        "peak_system_cpu_percent": 58.1,
+        "avg_power_watts": 114.96,
+        "avg_process_cpu_percent": 564.29,
+        "avg_system_cpu_percent": 49.27,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
+        "peak_gpu_utilization_percent": 96.0,
+        "peak_power_watts": 133.74,
+        "peak_process_cpu_percent": 698.1,
+        "peak_process_ram_mb": 1639.27,
+        "peak_system_cpu_percent": 73.0,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5574
+      "total_time_sec": 2.5489
     },
     {
       "is_valid": true,
@@ -115,24 +115,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 3,
-      "speed_factor_rt": 18.94,
+      "speed_factor_rt": 18.73,
       "telemetry": {
-        "avg_gpu_utilization_percent": 75.42,
-        "avg_power_watts": 113.42,
-        "avg_process_cpu_percent": 567.89,
-        "avg_system_cpu_percent": 48.46,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 72.5,
+        "avg_power_watts": 113.64,
+        "avg_process_cpu_percent": 561.37,
+        "avg_system_cpu_percent": 50.71,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 134.63,
-        "peak_process_cpu_percent": 705.6,
-        "peak_process_ram_mb": 1595.93,
-        "peak_system_cpu_percent": 55.0,
+        "peak_power_watts": 134.16,
+        "peak_process_cpu_percent": 698.1,
+        "peak_process_ram_mb": 1638.36,
+        "peak_system_cpu_percent": 84.7,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.552
+      "total_time_sec": 2.5809
     },
     {
       "is_valid": true,
@@ -143,24 +143,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 4,
-      "speed_factor_rt": 18.86,
+      "speed_factor_rt": 18.87,
       "telemetry": {
-        "avg_gpu_utilization_percent": 79.96,
-        "avg_power_watts": 112.06,
-        "avg_process_cpu_percent": 570.8,
-        "avg_system_cpu_percent": 48.87,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 80.04,
+        "avg_power_watts": 114.28,
+        "avg_process_cpu_percent": 565.1,
+        "avg_system_cpu_percent": 48.29,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 135.04,
-        "peak_process_cpu_percent": 705.6,
-        "peak_process_ram_mb": 1586.1,
-        "peak_system_cpu_percent": 55.6,
+        "peak_power_watts": 135.54,
+        "peak_process_cpu_percent": 698.1,
+        "peak_process_ram_mb": 1639.95,
+        "peak_system_cpu_percent": 53.6,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5635
+      "total_time_sec": 2.5616
     },
     {
       "is_valid": true,
@@ -171,24 +171,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 5,
-      "speed_factor_rt": 18.95,
+      "speed_factor_rt": 18.97,
       "telemetry": {
-        "avg_gpu_utilization_percent": 76.92,
-        "avg_power_watts": 114.88,
-        "avg_process_cpu_percent": 565.32,
-        "avg_system_cpu_percent": 48.45,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 76.96,
+        "avg_power_watts": 113.74,
+        "avg_process_cpu_percent": 565.95,
+        "avg_system_cpu_percent": 48.98,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 135.04,
-        "peak_process_cpu_percent": 698.1,
-        "peak_process_ram_mb": 1587.48,
-        "peak_system_cpu_percent": 55.2,
+        "peak_power_watts": 135.34,
+        "peak_process_cpu_percent": 705.6,
+        "peak_process_ram_mb": 1639.95,
+        "peak_system_cpu_percent": 55.6,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5513
+      "total_time_sec": 2.5478
     },
     {
       "is_valid": true,
@@ -199,24 +199,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 6,
-      "speed_factor_rt": 19.01,
+      "speed_factor_rt": 18.94,
       "telemetry": {
-        "avg_gpu_utilization_percent": 74.58,
-        "avg_power_watts": 114.42,
-        "avg_process_cpu_percent": 568.31,
-        "avg_system_cpu_percent": 48.36,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 76.5,
+        "avg_power_watts": 114.9,
+        "avg_process_cpu_percent": 567.2,
+        "avg_system_cpu_percent": 48.77,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 135.28,
+        "peak_power_watts": 135.43,
         "peak_process_cpu_percent": 698.1,
-        "peak_process_ram_mb": 1599.89,
-        "peak_system_cpu_percent": 53.4,
+        "peak_process_ram_mb": 1628.93,
+        "peak_system_cpu_percent": 61.1,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5432
+      "total_time_sec": 2.5524
     },
     {
       "is_valid": true,
@@ -227,24 +227,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 7,
-      "speed_factor_rt": 19.02,
+      "speed_factor_rt": 18.82,
       "telemetry": {
-        "avg_gpu_utilization_percent": 82.31,
-        "avg_power_watts": 113.79,
-        "avg_process_cpu_percent": 566.15,
-        "avg_system_cpu_percent": 48.75,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 76.81,
+        "avg_power_watts": 115.74,
+        "avg_process_cpu_percent": 562.14,
+        "avg_system_cpu_percent": 48.77,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 134.69,
+        "peak_power_watts": 135.85,
         "peak_process_cpu_percent": 705.6,
-        "peak_process_ram_mb": 1599.05,
-        "peak_system_cpu_percent": 57.5,
+        "peak_process_ram_mb": 1631.73,
+        "peak_system_cpu_percent": 55.3,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5411
+      "total_time_sec": 2.5681
     },
     {
       "is_valid": true,
@@ -255,24 +255,24 @@
         "sample_(Vocals).wav"
       ],
       "round": 8,
-      "speed_factor_rt": 18.91,
+      "speed_factor_rt": 19.02,
       "telemetry": {
-        "avg_gpu_utilization_percent": 77.69,
-        "avg_power_watts": 115.99,
-        "avg_process_cpu_percent": 564.57,
-        "avg_system_cpu_percent": 49.31,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 77.23,
+        "avg_power_watts": 115.26,
+        "avg_process_cpu_percent": 565.99,
+        "avg_system_cpu_percent": 48.88,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 134.81,
+        "peak_power_watts": 135.85,
         "peak_process_cpu_percent": 705.6,
-        "peak_process_ram_mb": 1586.12,
-        "peak_system_cpu_percent": 57.6,
+        "peak_process_ram_mb": 1640.0,
+        "peak_system_cpu_percent": 54.2,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5563
+      "total_time_sec": 2.5419
     },
     {
       "is_valid": true,
@@ -283,33 +283,33 @@
         "sample_(Vocals).wav"
       ],
       "round": 9,
-      "speed_factor_rt": 18.96,
+      "speed_factor_rt": 18.99,
       "telemetry": {
-        "avg_gpu_utilization_percent": 73.54,
-        "avg_power_watts": 114.47,
-        "avg_process_cpu_percent": 571.72,
-        "avg_system_cpu_percent": 48.2,
-        "baseline_device_vram_mb": 1622.58,
-        "peak_device_vram_mb": 1896.58,
+        "avg_gpu_utilization_percent": 77.08,
+        "avg_power_watts": 116.87,
+        "avg_process_cpu_percent": 569.61,
+        "avg_system_cpu_percent": 48.91,
+        "baseline_device_vram_mb": 1681.68,
+        "peak_device_vram_mb": 1955.68,
         "peak_gpu_utilization_percent": 97.0,
-        "peak_power_watts": 135.5,
+        "peak_power_watts": 135.92,
         "peak_process_cpu_percent": 705.6,
-        "peak_process_ram_mb": 1599.05,
+        "peak_process_ram_mb": 1640.01,
         "peak_system_cpu_percent": 54.8,
         "samples_count": 26,
         "torch_peak_allocated_vram_mb": 177.49,
         "torch_peak_reserved_vram_mb": 274.0
       },
-      "total_time_sec": 2.5497
+      "total_time_sec": 2.5452
     }
   ],
-  "session_id": "session_20261010_123555_d732c2",
+  "session_id": "session_20261012_112543_5611a8",
   "summary": {
-    "avg_speed_factor_rt": 18.94,
-    "avg_total_time_sec": 2.5529,
-    "max_total_time_sec": 2.5635,
-    "min_total_time_sec": 2.5411,
-    "peak_device_vram_mb": 1896.58,
+    "avg_speed_factor_rt": 18.91,
+    "avg_total_time_sec": 2.5564,
+    "max_total_time_sec": 2.5809,
+    "min_total_time_sec": 2.5419,
+    "peak_device_vram_mb": 1955.68,
     "peak_torch_allocated_vram_mb": 177.49,
     "rounds_measured": 9,
     "warmup_rounds": 1
@@ -330,5 +330,5 @@
     "torch_version": "2.11.0+cu128",
     "total_gpu_vram_mb": 16311.0
   },
-  "timestamp_utc": "2026-10-10T12:36:28.549515+00:00"
+  "timestamp_utc": "2026-10-12T11:26:17.012787+00:00"
 }
