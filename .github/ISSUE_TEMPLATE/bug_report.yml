@@ -1,0 +1,71 @@
+name: Bug Report
+description: Create a report to help us reproduce and fix a bug in RLD UVR-Opt.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please ensure you have checked existing issues first.
+  - type: input
+    id: os_version
+    attributes:
+      label: Operating System Version
+      description: What version of Windows are you running?
+      placeholder: e.g., Windows 11 Pro 64-bit (Build 22631)
+    validations:
+      required: true
+  - type: dropdown
+    id: install_mode
+    attributes:
+      label: Installation Profile
+      description: Which installation profile was chosen in install_packages.bat / Install-UVR.ps1?
+      options:
+        - "Option A (NVIDIA CUDA EP)"
+        - "Option B (NVIDIA TensorRT-RTX EP)"
+        - "Option C (CPU Only Fallback)"
+        - "Manual virtual environment setup"
+    validations:
+      required: true
+  - type: input
+    id: gpu_hardware
+    attributes:
+      label: GPU Hardware & Driver Version
+      description: Model name and NVIDIA display driver version.
+      placeholder: e.g., NVIDIA GeForce RTX 4070 (Driver 572.16)
+    validations:
+      required: false
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      description: Describe the exact sequence of steps to trigger the bug.
+      placeholder: |
+        1. Run `python -m uvr_cli run -a "song.wav" -m "UVR-MDX-NET-Inst_HQ_4.onnx"`
+        2. Select TensorRT-RTX EP in GUI
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: error_logs
+    attributes:
+      label: Terminal Output & Logs
+      description: Paste terminal traceback or relevant entries from `uvr_run.log` or `install_logs/`.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: install_record
+    attributes:
+      label: Install Record (`install/install_record.json`)
+      description: Paste the content of your `install/install_record.json` file if available.
+      render: json
+    validations:
+      required: false

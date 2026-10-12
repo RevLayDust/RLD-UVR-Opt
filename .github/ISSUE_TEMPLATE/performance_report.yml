@@ -1,0 +1,54 @@
+name: Performance & Benchmark Report
+description: Submit hardware benchmark results across varied GPU and CPU architectures.
+title: "[Bench]: "
+labels: ["benchmark", "performance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing hardware telemetry! Standardized benchmarks help us validate Execution Provider speedups and memory optimizations.
+  - type: input
+    id: system_hardware
+    attributes:
+      label: System Hardware Specifications
+      description: GPU model, CPU model, total RAM, and OS version.
+      placeholder: e.g., NVIDIA GeForce RTX 4080 (Driver 572.16) | Intel i7-13700K | 32 GB RAM | Windows 11
+    validations:
+      required: true
+  - type: input
+    id: model_tested
+    attributes:
+      label: Model Name & Settings
+      description: Model filename, segment size, overlap, and precision mode.
+      placeholder: "e.g., UVR-MDX-NET-Inst_HQ_4.onnx (Segment: 4000, Overlap: 0.75, FP32)"
+    validations:
+      required: true
+  - type: dropdown
+    id: ep_tested
+    attributes:
+      label: Execution Provider Tested
+      options:
+        - "NvTensorRTRTXExecutionProvider (trt_rtx:0)"
+        - "CUDAExecutionProvider (cuda:0)"
+        - "CPUExecutionProvider (cpu)"
+    validations:
+      required: true
+  - type: textarea
+    id: results_table
+    attributes:
+      label: Benchmark Results Table
+      description: Fill in your measurement metrics following the format in docs/development/benchmarking.md.
+      value: |
+        | Metric | Cold Run (Warmup 1) | Steady-State (Median / Mean) | Chunk Latency (p50 / p95) | Peak Device VRAM | Peak Torch VRAM | Peak Process RAM |
+        | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+        | Measured Values | 0.00 s (0.00x RT) | 0.00 s (0.00x RT) | 0.0 ms / 0.0 ms | 0,000 MB | 0,000 MB | 0,000 MB |
+    validations:
+      required: true
+  - type: textarea
+    id: summary_csv_row
+    attributes:
+      label: Benchmark CSV / JSON Output
+      description: Paste the corresponding row from `benchmark_results/summary.csv` or session JSON file.
+      render: text
+    validations:
+      required: false

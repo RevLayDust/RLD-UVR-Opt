@@ -1,0 +1,30 @@
+name: Feature Request / RFC
+description: Suggest an optimization, new model architecture, Execution Provider, or CLI capability.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make RLD UVR-Opt faster or more versatile? Describe it below.
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a specific limitation, hardware constraint, or workflow friction?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the behavior, CLI flag, or architectural change you would like to see implemented.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives_considered
+    attributes:
+      label: Alternative Approaches Considered
+      description: Describe any alternative implementations or workarounds you have evaluated.
+    validations:
+      required: false
