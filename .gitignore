@@ -21,7 +21,6 @@ output/*
 uvr_run.log
 data.pkl
 error.log
-CONTRIBUTING.md
 rubberband.exe
 ffmpeg.exe
 sndfile.dll
