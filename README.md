@@ -3,7 +3,7 @@
 # RLD UVR-Opt: Ultimate Vocal Remover GUI (Optimized)
 
 [![Release](https://img.shields.io/github/v/release/revlaydust/rld-uvr-opt?color=blue)](https://github.com/revlaydust/rld-uvr-opt/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Mixed License: MIT + AGPL-3.0-or-later](https://img.shields.io/badge/Mixed_License-MIT_%2B_AGPL--3.0--or--later-green.svg)](#license--references)
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/latest/python3.11/)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%2F11%20(64--bit)-informational.svg?logo=windows&logoColor=white)](#-installation--prerequisites)
 [![Acceleration: CUDA, TensorRT-RTX & CPU](https://img.shields.io/badge/Acceleration-CUDA%20%7C%20TensorRT--RTX%20%7C%20CPU-76B900.svg?logo=nvidia&logoColor=white)](#-installation--prerequisites)
