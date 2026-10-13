@@ -297,7 +297,7 @@ def parse_and_validate_device(device_str: str) -> Tuple[bool, str, str]:
     prefix = parts[0]
     index = parts[1] if len(parts) > 1 else "0"
 
-    if prefix not in ("cuda", "trt_rtx", "directml"):
+    if prefix not in ("cuda", "trt_rtx"):
         raise ValueError(
             f"Invalid device '{device_str}'. Valid choices are: 'cuda[:N]', 'trt_rtx[:N]', or 'cpu' (e.g. 'cuda:0', 'trt_rtx:0', 'cpu')."
         )
