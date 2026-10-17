@@ -368,7 +368,7 @@ else:
 
 MANUAL_ENSEMBLE_OPTIONS = (MIN_SPEC, MAX_SPEC, AUDIO_AVERAGE, COMBINE_INPUTS)
 
-PROCESS_METHODS = (VR_ARCH_PM, MDX_ARCH_TYPE, DEMUCS_ARCH_TYPE, ENSEMBLE_MODE, AUDIO_TOOLS)
+PROCESS_METHODS = (MDX_ARCH_TYPE, AUDIO_TOOLS)
 
 DEMUCS_SEGMENTS = (DEF_OPT, '1', '5', '10', '15', '20', 
                   '25', '30', '35', '40', '45', '50', 
@@ -491,7 +491,7 @@ ERROR_OPTION = "Open Error Log"
 VERIFY_BEGIN = 'Verifying file '
 SAMPLE_BEGIN = 'Creating Sample '
 MODEL_MISSING_CHECK = 'Model Missing:'
-OPTION_LIST = [VR_OPTION, MDX_OPTION, DEMUCS_OPTION, ENSEMBLE_OPTION, ALIGNMENT_TOOL, HELP_OPTION, ERROR_OPTION]
+OPTION_LIST = [MDX_OPTION, HELP_OPTION, ERROR_OPTION] # MDX-Net only for now
 
 #Menu Strings
 VR_MENU ='VR Menu'
@@ -1145,10 +1145,7 @@ CHOSEN_PROCESS_METHOD_HELP = (
     'Choose a Processing Method:\n'
     'Select from various AI networks and algorithms to process your track:\n'
     '\n'
-    '• VR Architecture: Uses magnitude spectrograms for source separation.\n'
     '• MDX-Net: Employs a Hybrid Spectrogram network for source separation.\n'
-    '• Demucs v3: Also utilizes a Hybrid Spectrogram network for source separation.\n'
-    '• Ensemble Mode: Combine results from multiple models and networks for optimal results.\n'
     '• Audio Tools: Additional utilities for added convenience.'
 )        
 
