@@ -19,9 +19,9 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 />
 <br/>
 
-## Up to ~5.3x Faster Inference &nbsp;|&nbsp; ~77% Lower VRAM Usage
+## Up to ~5.3x Faster Inference &nbsp;|&nbsp; ~76% Lower VRAM Usage
 
-<sub>*~3.5x faster & ~52% lower VRAM on stable CUDA EP. Up to ~5.3x faster & ~77% lower VRAM with experimental TensorRT-RTX EP (see [Verified Benchmarks](#verified-benchmarks)).*</sub>
+<sub>*~3.5x faster & ~52% lower VRAM on stable CUDA EP. Up to ~5.3x faster & ~76% lower VRAM with experimental TensorRT-RTX EP (see [Verified Benchmarks](#verified-benchmarks)).*</sub>
 
 [Prerequisites & Installation](#installation--prerequisites) $\cdot$ [Usage & Quick Start](#usage--quick-start) $\cdot$ [Key Features](#key-features) $\cdot$ [Verified Benchmarks](#verified-benchmarks) $\cdot$ [Roadmap](#roadmap) $\cdot$ [Credits](#credits--acknowledgments)
 
@@ -55,20 +55,27 @@ Focused on accelerated **ONNX Runtime inference**, lower hardware VRAM usage, an
 
 ### 3. One-Click Automated Installation (Windows)
 
-RLD UVR-Opt provides an automated setup script that handles your entire environment setup from start to finish:
+RLD UVR-Opt provides an automated installer that handles your entire environment setup from start to finish.
 
-#### Step 1: Clone or Download the Repository
-```powershell
-git clone https://github.com/revlaydust/rld-uvr-opt.git
-cd rld-uvr-opt
-```
-*(Or [Download the ZIP](https://github.com/revlaydust/rld-uvr-opt/archive/refs/heads/main.zip) and extract it to a folder).*
+> [!TIP]
+> 🔗 **[Download the installer from the Latest Release](https://github.com/revlaydust/rld-uvr-opt/releases/latest)**  
+> [![Latest Release](https://img.shields.io/github/v/release/revlaydust/rld-uvr-opt?label=latest%20release&color=76B900)](https://github.com/revlaydust/rld-uvr-opt/releases/latest)
 
-#### Step 2: Run the Automated Installer
-Simply double-click `install\install_packages.bat` in File Explorer, or run in terminal:
-```powershell
-.\install\install_packages.bat
-```
+#### Step 1: Download the Installer
+1. Open the **[Latest Release](https://github.com/revlaydust/rld-uvr-opt/releases/latest)** page.
+2. Scroll down to the **Assets** section (click it to expand if it is collapsed) and click the file whose name ends with `Installation.bat`, for example `v1.2.3_Installation.bat`. The numbers are just the version and change with every release. Do **not** click *Source code (zip)* or *Source code (tar.gz)*, because those are not the installer.
+3. Save it in the folder where you want RLD UVR-Opt to be set up. The installer will create a new folder whose name starts with `RLD-UVR-Opt` right next to it and download the project there.
+
+> [!NOTE]
+> Your browser or Windows SmartScreen may warn you about a downloaded `.bat` file. The script is plain text, so you can open it in any text editor to review it before running.
+
+#### Step 2: Run the Installer
+Double-click the file you just downloaded (the one ending with `Installation.bat`) in File Explorer, then choose an installation mode from the menu:
+
+* **`[1]` Advanced Installation (Recommended)** — best if you need more flexibility. It clones the repository with `git`, so **Git is required**. If Git is not installed, the installer offers to download and install it for you, either automatically or manually.
+* **`[2]` Standard Installation** — best if you want something simple that just works. It downloads and extracts the release ZIP, with no Git required.
+
+The installer then launches the project's setup script automatically and takes care of the rest.
 
 #### Step 3: Run the GUI
 > [!IMPORTANT]
@@ -84,7 +91,7 @@ Simply double-click `install\install_packages.bat` in File Explorer, or run in t
    * If your installation only supports `CPUExecutionProvider`, both **GPU Device** and **Execution Provider** are hidden and disabled.
 
    > [!IMPORTANT]
-   > **You MUST restart UVR every time you change the Execution Provider.** The provider is applied when UVR starts, so a change made while UVR is running does not take effect until you restart. Use the **Restart Application** button in the settings menu, or close and re-open UVR.
+   > **You MUST restart UVR every time you change the Execution Provider and GPU Conversions.** The provider is applied when UVR starts, so a change made while UVR is running does not take effect until you restart. Use the **Restart Application** button in the settings menu, or close and re-open UVR.
 
 4. Go back to the main menu, then enable **GPU Conversions**.
 5. Re-open UVR.
@@ -95,6 +102,7 @@ If you installed the **CPU version**, simply launch UVR using `run_uvr.bat`, `py
 > If you encounter any specific issues, feel free to [open an issue](https://github.com/revlaydust/rld-uvr-opt/issues)! 
 
 #### What the One-Click Installer automates for you:
+* **Guided Setup**: Pick **Advanced** (Git) or **Standard** (ZIP) mode from a simple menu. In Advanced mode, a missing Git is downloaded and installed for you on request.
 * **Hardware & Driver Detection**: Automatically identifies your GPU architecture (NVIDIA RTX 20/30/40/50 series) and selects PyTorch CUDA 12.8 or optimized CPU fallback.
 * **Python Environment Management**: Automatically bootstraps `uv` and provisions an isolated Python 3.11 virtual environment (`venv`).
 * **Fast Dependency Installation**: Pulls and configures all required packages, including PyTorch and ONNX Runtime GPU/CPU.
